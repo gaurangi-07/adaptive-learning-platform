@@ -1,0 +1,149 @@
+// ===================================================================
+// PARAKH Adaptive Learning Platform — Database Schema (Prisma ORM)
+// Module 2: Adaptive Testing System
+// ===================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------------
+// MODULE 2 MODELS
+// -------------------------------------------------------------------
+
+/// Represents a single adaptive assessment session taken by a student.
+/// Connects to Module 1 User table via `studentId`.
+model AdaptiveAssessment {
+  id                 String               @id @default(uuid())
+  studentId          Int                  // Foreign key to Module 1 User.id
+  subject            String               @default("Mathematics")
+  status             AssessmentStatus     @default(IN_PROGRESS)
+  currentDifficulty  Int                  @default(2) // 1=Easy, 2=Medium, 3=Hard
+  totalQuestions     Int                  @default(10)
+  answeredCount      Int                  @default(0)
+  score              Int                  @default(0)
+  accuracy           Float                @default(0.0)
+  startedAt          DateTime             @default(now())
+  completedAt        DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  // Relationships
+  questions          AssessmentQuestion[]
+  responses          StudentResponse[]
+  topicProficiencies TopicProficiency[]
+  difficultyHistory  DifficultyHistory[]
+
+  @@index([studentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("adaptive_assessments")
+}
+
+/// Represents an instance of a question selected and presented in an assessment.
+/// Connects to Module 3 Question table via `questionId`.
+model AssessmentQuestion {
+  id               String              @id @default(uuid())
+  assessmentId     String
+  assessment       AdaptiveAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  questionId       String              // Foreign key to Module 3 QuestionBank.id
+  orderIndex       Int                 // 1-based order in which the question was delivered
+  topic            String
+  competency       String
+  difficulty       Int                 // 1, 2, 3
+  questionText     String
+  optionsJson      Json                // [{ id: "A", text: "..." }, ...]
+  correctOption    String              // "A", "B", "C", "D" (server-side only)
+  explanation      String?
+  allocatedSeconds Int                 @default(90)
+  presentedAt      DateTime            @default(now())
+
+  // Relationships
+  response         StudentResponse?
+
+  @@index([assessmentId])
+  @@index([questionId])
+  @@index([topic, difficulty])
+  @@map("assessment_questions")
+}
+
+/// Tracks the student's submitted answer, response-time, correctness, and timeout status.
+model StudentResponse {
+  id                   String              @id @default(uuid())
+  assessmentId         String
+  assessment           AdaptiveAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  questionId           String              // Foreign key to Module 3 QuestionBank.id
+  assessmentQuestionId String              @unique
+  assessmentQuestion   AssessmentQuestion  @relation(fields: [assessmentQuestionId], references: [id], onDelete: Cascade)
+  selectedOption       String?             // "A", "B", "C", "D" or null if timed out
+  isCorrect            Boolean             @default(false)
+  isTimedOut           Boolean             @default(false)
+  startedAt            DateTime
+  submittedAt          DateTime
+  responseTimeMs       Int                 // Response time in milliseconds
+  responseTimeSec      Float               // Response time in seconds
+  difficulty           Int                 // Difficulty at time of answering (1, 2, 3)
+  topic                String
+  createdAt            DateTime            @default(now())
+
+  @@index([assessmentId])
+  @@index([assessmentId, topic])
+  @@index([questionId])
+  @@map("student_responses")
+}
+
+/// Tracks ongoing proficiency and difficulty states per topic within an assessment session.
+/// Seeded initially from Module 1 Baseline Input.
+model TopicProficiency {
+  id                 String              @id @default(uuid())
+  assessmentId       String
+  assessment         AdaptiveAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  studentId          Int
+  topic              String
+  initialScore       Float               @default(50.0) // 0-100 baseline from Module 1
+  currentProficiency Float               @default(50.0) // Evolving proficiency score
+  questionsAttempted Int                 @default(0)
+  questionsCorrect   Int                 @default(0)
+  currentDifficulty  Int                 @default(2) // 1=Easy, 2=Medium, 3=Hard
+  consecutiveCorrect Int                 @default(0) // Tracks runs of consecutive correct answers
+  recentOutcomes     String              @default("[]") // JSON string of recent booleans for sliding window
+  updatedAt          DateTime            @updatedAt
+
+  @@unique([assessmentId, topic])
+  @@index([studentId, topic])
+  @@map("topic_proficiencies")
+}
+
+/// Auditable history of every difficulty adjustment decision made by the adaptive engine.
+model DifficultyHistory {
+  id                 String              @id @default(uuid())
+  assessmentId       String
+  assessment         AdaptiveAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  topic              String
+  questionOrder      Int                 // Which question number triggered this decision
+  previousDifficulty Int                 // Difficulty before transition
+  newDifficulty      Int                 // Difficulty after transition
+  reason             String              // e.g., "3_CONSECUTIVE_CORRECT", "2_INCORRECT_IN_LAST_3", "MAINTAINED"
+  details            String?             // Human-readable narrative explanation
+  createdAt          DateTime            @default(now())
+
+  @@index([assessmentId])
+  @@index([assessmentId, topic])
+  @@map("difficulty_history")
+}
+
+// -------------------------------------------------------------------
+// ENUMS & INTEGRATION TYPES
+// -------------------------------------------------------------------
+
+enum AssessmentStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+  TIMED_OUT
+}

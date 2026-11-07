@@ -1,0 +1,31 @@
+{
+  "name": "adaptive-learning-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Adaptive Learning Platform with AI-driven Adaptive MCQ Selection for PARAKH (Module 2: Adaptive Testing System)",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "npm run dev:server",
+    "dev:all": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "start": "npm --prefix server start",
+    "test": "npm --prefix server test",
+    "build": "npm --prefix client run build",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:studio": "npx prisma studio"
+  },
+  "keywords": [
+    "adaptive-learning",
+    "parakh",
+    "computer-adaptive-testing",
+    "mcq-selection",
+    "education"
+  ],
+  "author": "Aryan Thakur",
+  "license": "MIT"
+}

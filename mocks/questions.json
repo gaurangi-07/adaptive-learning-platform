@@ -1,0 +1,1107 @@
+[
+  {
+    "id": "MATH-ALG-01",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Linear Equations",
+    "difficulty": 1,
+    "question": "If 2x + 5 = 15, what is the value of x?",
+    "options": [
+      { "id": "A", "text": "5" },
+      { "id": "B", "text": "10" },
+      { "id": "C", "text": "7.5" },
+      { "id": "D", "text": "4" }
+    ],
+    "correctOption": "A",
+    "explanation": "Subtract 5 from both sides: 2x = 10, then divide by 2: x = 5.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-02",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Linear Equations",
+    "difficulty": 1,
+    "question": "Solve for y: 3y − 9 = 0",
+    "options": [
+      { "id": "A", "text": "9" },
+      { "id": "B", "text": "3" },
+      { "id": "C", "text": "−3" },
+      { "id": "D", "text": "0" }
+    ],
+    "correctOption": "B",
+    "explanation": "Add 9 to both sides: 3y = 9, then divide by 3: y = 3.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-03",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Simplifying Expressions",
+    "difficulty": 1,
+    "question": "Simplify: 4a + 3a − 2a",
+    "options": [
+      { "id": "A", "text": "5a" },
+      { "id": "B", "text": "9a" },
+      { "id": "C", "text": "a" },
+      { "id": "D", "text": "7a" }
+    ],
+    "correctOption": "A",
+    "explanation": "Combine like terms: 4a + 3a − 2a = (4 + 3 − 2)a = 5a.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-04",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Polynomials",
+    "difficulty": 1,
+    "question": "What is the degree of the polynomial 5x³ + 2x − 7?",
+    "options": [
+      { "id": "A", "text": "2" },
+      { "id": "B", "text": "5" },
+      { "id": "C", "text": "3" },
+      { "id": "D", "text": "1" }
+    ],
+    "correctOption": "C",
+    "explanation": "The degree of a polynomial is the highest power of the variable. Here, the highest power is 3.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-05",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Quadratic Equations",
+    "difficulty": 2,
+    "question": "Find the roots of x² − 5x + 6 = 0.",
+    "options": [
+      { "id": "A", "text": "x = 1 and x = 6" },
+      { "id": "B", "text": "x = 2 and x = 3" },
+      { "id": "C", "text": "x = −2 and x = −3" },
+      { "id": "D", "text": "x = 5 and x = 1" }
+    ],
+    "correctOption": "B",
+    "explanation": "Factorize: x² − 5x + 6 = (x − 2)(x − 3) = 0, so x = 2 or x = 3.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-06",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Simultaneous Equations",
+    "difficulty": 2,
+    "question": "Solve the system: x + y = 10 and x − y = 4. What is x?",
+    "options": [
+      { "id": "A", "text": "5" },
+      { "id": "B", "text": "6" },
+      { "id": "C", "text": "7" },
+      { "id": "D", "text": "8" }
+    ],
+    "correctOption": "C",
+    "explanation": "Adding the two equations: 2x = 14, so x = 7.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-07",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Quadratic Equations",
+    "difficulty": 2,
+    "question": "What is the discriminant of 2x² + 3x − 5 = 0?",
+    "options": [
+      { "id": "A", "text": "49" },
+      { "id": "B", "text": "−31" },
+      { "id": "C", "text": "19" },
+      { "id": "D", "text": "41" }
+    ],
+    "correctOption": "A",
+    "explanation": "Discriminant = b² − 4ac = 3² − 4(2)(−5) = 9 + 40 = 49.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-08",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Polynomials",
+    "difficulty": 2,
+    "question": "Expand: (x + 3)(x − 4)",
+    "options": [
+      { "id": "A", "text": "x² − x − 12" },
+      { "id": "B", "text": "x² + x − 12" },
+      { "id": "C", "text": "x² − 7x + 12" },
+      { "id": "D", "text": "x² + 7x − 12" }
+    ],
+    "correctOption": "A",
+    "explanation": "Using FOIL: x·x + x·(−4) + 3·x + 3·(−4) = x² − 4x + 3x − 12 = x² − x − 12.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-09",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Inequalities",
+    "difficulty": 2,
+    "question": "Solve the inequality: 3x − 7 > 8",
+    "options": [
+      { "id": "A", "text": "x > 3" },
+      { "id": "B", "text": "x > 5" },
+      { "id": "C", "text": "x < 5" },
+      { "id": "D", "text": "x > 15" }
+    ],
+    "correctOption": "B",
+    "explanation": "Add 7 to both sides: 3x > 15, then divide by 3: x > 5.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-10",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Arithmetic Progressions",
+    "difficulty": 3,
+    "question": "Find the sum of the first 20 terms of the AP: 3, 7, 11, 15, …",
+    "options": [
+      { "id": "A", "text": "820" },
+      { "id": "B", "text": "780" },
+      { "id": "C", "text": "840" },
+      { "id": "D", "text": "800" }
+    ],
+    "correctOption": "A",
+    "explanation": "a = 3, d = 4, n = 20. S = n/2 × [2a + (n−1)d] = 10 × [6 + 76] = 10 × 82 = 820.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-11",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Quadratic Equations",
+    "difficulty": 3,
+    "question": "If the roots of x² − px + 12 = 0 are in the ratio 1:3, find the value of p.",
+    "options": [
+      { "id": "A", "text": "6" },
+      { "id": "B", "text": "8" },
+      { "id": "C", "text": "10" },
+      { "id": "D", "text": "4" }
+    ],
+    "correctOption": "B",
+    "explanation": "Let roots be k and 3k. Product = 3k² = 12, so k² = 4, k = 2. Sum = 4k = 8, so p = 8.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-12",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Simultaneous Equations",
+    "difficulty": 3,
+    "question": "Solve: 2x + 3y = 12 and 5x − 2y = 11. Find x + y.",
+    "options": [
+      { "id": "A", "text": "4" },
+      { "id": "B", "text": "6" },
+      { "id": "C", "text": "5" },
+      { "id": "D", "text": "7" }
+    ],
+    "correctOption": "C",
+    "explanation": "Multiply first equation by 2 and second by 3: 4x + 6y = 24 and 15x − 6y = 33. Adding: 19x = 57, x = 3. Substituting: 6 + 3y = 12, y = 2. So x + y = 5.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ALG-13",
+    "subject": "Mathematics",
+    "topic": "Algebra",
+    "competency": "Polynomials",
+    "difficulty": 3,
+    "question": "If (x − 2) is a factor of x³ − 3x² + kx + 2, find the value of k.",
+    "options": [
+      { "id": "A", "text": "0" },
+      { "id": "B", "text": "1" },
+      { "id": "C", "text": "−1" },
+      { "id": "D", "text": "2" }
+    ],
+    "correctOption": "B",
+    "explanation": "By the factor theorem, f(2) = 0: 2³ − 3(2²) + k(2) + 2 = 8 − 12 + 2k + 2 = −2 + 2k = 0 → k = 1.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-01",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Area of Triangles",
+    "difficulty": 1,
+    "question": "What is the area of a triangle with base 10 cm and height 6 cm?",
+    "options": [
+      { "id": "A", "text": "30 cm²" },
+      { "id": "B", "text": "60 cm²" },
+      { "id": "C", "text": "16 cm²" },
+      { "id": "D", "text": "20 cm²" }
+    ],
+    "correctOption": "A",
+    "explanation": "Area = ½ × base × height = ½ × 10 × 6 = 30 cm².",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-02",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Properties of Circles",
+    "difficulty": 1,
+    "question": "What is the circumference of a circle with radius 7 cm? (Use π = 22/7)",
+    "options": [
+      { "id": "A", "text": "22 cm" },
+      { "id": "B", "text": "44 cm" },
+      { "id": "C", "text": "154 cm" },
+      { "id": "D", "text": "14 cm" }
+    ],
+    "correctOption": "B",
+    "explanation": "Circumference = 2πr = 2 × (22/7) × 7 = 44 cm.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-03",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Angles",
+    "difficulty": 1,
+    "question": "Two angles of a triangle are 45° and 65°. What is the third angle?",
+    "options": [
+      { "id": "A", "text": "80°" },
+      { "id": "B", "text": "70°" },
+      { "id": "C", "text": "60°" },
+      { "id": "D", "text": "90°" }
+    ],
+    "correctOption": "B",
+    "explanation": "Sum of angles in a triangle = 180°. Third angle = 180° − 45° − 65° = 70°.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-04",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Perimeter",
+    "difficulty": 1,
+    "question": "What is the perimeter of a rectangle with length 12 cm and width 5 cm?",
+    "options": [
+      { "id": "A", "text": "34 cm" },
+      { "id": "B", "text": "60 cm" },
+      { "id": "C", "text": "17 cm" },
+      { "id": "D", "text": "24 cm" }
+    ],
+    "correctOption": "A",
+    "explanation": "Perimeter = 2(length + width) = 2(12 + 5) = 2 × 17 = 34 cm.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-05",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Coordinate Geometry",
+    "difficulty": 2,
+    "question": "Find the distance between the points (3, 4) and (0, 0).",
+    "options": [
+      { "id": "A", "text": "7" },
+      { "id": "B", "text": "5" },
+      { "id": "C", "text": "25" },
+      { "id": "D", "text": "12" }
+    ],
+    "correctOption": "B",
+    "explanation": "Distance = √((3−0)² + (4−0)²) = √(9 + 16) = √25 = 5.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-06",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Coordinate Geometry",
+    "difficulty": 2,
+    "question": "What is the midpoint of the line segment joining (2, 8) and (6, 4)?",
+    "options": [
+      { "id": "A", "text": "(4, 6)" },
+      { "id": "B", "text": "(8, 12)" },
+      { "id": "C", "text": "(3, 5)" },
+      { "id": "D", "text": "(4, 4)" }
+    ],
+    "correctOption": "A",
+    "explanation": "Midpoint = ((2+6)/2, (8+4)/2) = (4, 6).",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-07",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Similar Triangles",
+    "difficulty": 2,
+    "question": "In two similar triangles, the sides of one are 3 cm, 4 cm, and 5 cm. If the longest side of the other triangle is 10 cm, what is its shortest side?",
+    "options": [
+      { "id": "A", "text": "6 cm" },
+      { "id": "B", "text": "8 cm" },
+      { "id": "C", "text": "7 cm" },
+      { "id": "D", "text": "5 cm" }
+    ],
+    "correctOption": "A",
+    "explanation": "Scale factor = 10/5 = 2. Shortest side = 3 × 2 = 6 cm.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-08",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Properties of Circles",
+    "difficulty": 2,
+    "question": "A chord of length 24 cm is at a distance of 5 cm from the centre. What is the radius of the circle?",
+    "options": [
+      { "id": "A", "text": "12 cm" },
+      { "id": "B", "text": "13 cm" },
+      { "id": "C", "text": "14 cm" },
+      { "id": "D", "text": "10 cm" }
+    ],
+    "correctOption": "B",
+    "explanation": "Half the chord = 12 cm, distance from centre = 5 cm. Radius = √(12² + 5²) = √(144 + 25) = √169 = 13 cm.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-09",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Surface Area and Volume",
+    "difficulty": 2,
+    "question": "What is the volume of a cylinder with radius 3 cm and height 7 cm? (Use π = 22/7)",
+    "options": [
+      { "id": "A", "text": "198 cm³" },
+      { "id": "B", "text": "132 cm³" },
+      { "id": "C", "text": "66 cm³" },
+      { "id": "D", "text": "396 cm³" }
+    ],
+    "correctOption": "A",
+    "explanation": "Volume = πr²h = (22/7) × 9 × 7 = 22 × 9 = 198 cm³.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-10",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Pythagoras Theorem",
+    "difficulty": 3,
+    "question": "In a right triangle, the hypotenuse is 17 cm and one side is 8 cm. Find the other side.",
+    "options": [
+      { "id": "A", "text": "9 cm" },
+      { "id": "B", "text": "15 cm" },
+      { "id": "C", "text": "12 cm" },
+      { "id": "D", "text": "13 cm" }
+    ],
+    "correctOption": "B",
+    "explanation": "By Pythagoras: other side = √(17² − 8²) = √(289 − 64) = √225 = 15 cm.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-11",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Surface Area and Volume",
+    "difficulty": 3,
+    "question": "A cone has a radius of 6 cm and a slant height of 10 cm. What is its curved surface area? (Use π = 3.14)",
+    "options": [
+      { "id": "A", "text": "188.4 cm²" },
+      { "id": "B", "text": "376.8 cm²" },
+      { "id": "C", "text": "113.04 cm²" },
+      { "id": "D", "text": "60 cm²" }
+    ],
+    "correctOption": "A",
+    "explanation": "Curved surface area = πrl = 3.14 × 6 × 10 = 188.4 cm².",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-12",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Coordinate Geometry",
+    "difficulty": 3,
+    "question": "Find the area of the triangle formed by the points (0, 0), (4, 0), and (0, 3).",
+    "options": [
+      { "id": "A", "text": "6 sq units" },
+      { "id": "B", "text": "12 sq units" },
+      { "id": "C", "text": "7 sq units" },
+      { "id": "D", "text": "5 sq units" }
+    ],
+    "correctOption": "A",
+    "explanation": "Area = ½ |x₁(y₂ − y₃) + x₂(y₃ − y₁) + x₃(y₁ − y₂)| = ½ |0 + 4(3) + 0| = ½ × 12 = 6 sq units.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-GEO-13",
+    "subject": "Mathematics",
+    "topic": "Geometry",
+    "competency": "Similar Triangles",
+    "difficulty": 3,
+    "question": "In ΔABC, DE is parallel to BC where D is on AB and E is on AC. If AD = 4 cm, DB = 6 cm, and AE = 5 cm, find EC.",
+    "options": [
+      { "id": "A", "text": "6.5 cm" },
+      { "id": "B", "text": "8 cm" },
+      { "id": "C", "text": "7.5 cm" },
+      { "id": "D", "text": "10 cm" }
+    ],
+    "correctOption": "C",
+    "explanation": "By Basic Proportionality Theorem: AD/DB = AE/EC → 4/6 = 5/EC → EC = 30/4 = 7.5 cm.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-01",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "HCF and LCM",
+    "difficulty": 1,
+    "question": "What is the HCF of 12 and 18?",
+    "options": [
+      { "id": "A", "text": "6" },
+      { "id": "B", "text": "3" },
+      { "id": "C", "text": "36" },
+      { "id": "D", "text": "12" }
+    ],
+    "correctOption": "A",
+    "explanation": "Factors of 12: 1, 2, 3, 4, 6, 12. Factors of 18: 1, 2, 3, 6, 9, 18. HCF = 6.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-02",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Percentages",
+    "difficulty": 1,
+    "question": "What is 25% of 200?",
+    "options": [
+      { "id": "A", "text": "50" },
+      { "id": "B", "text": "25" },
+      { "id": "C", "text": "75" },
+      { "id": "D", "text": "100" }
+    ],
+    "correctOption": "A",
+    "explanation": "25% of 200 = (25/100) × 200 = 50.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-03",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Ratio and Proportion",
+    "difficulty": 1,
+    "question": "If the ratio of boys to girls in a class is 3:5 and there are 15 boys, how many girls are there?",
+    "options": [
+      { "id": "A", "text": "20" },
+      { "id": "B", "text": "25" },
+      { "id": "C", "text": "30" },
+      { "id": "D", "text": "10" }
+    ],
+    "correctOption": "B",
+    "explanation": "3/5 = 15/x → x = (15 × 5)/3 = 25 girls.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-04",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Number Systems",
+    "difficulty": 1,
+    "question": "Which of the following is an irrational number?",
+    "options": [
+      { "id": "A", "text": "√4" },
+      { "id": "B", "text": "0.75" },
+      { "id": "C", "text": "√2" },
+      { "id": "D", "text": "3/7" }
+    ],
+    "correctOption": "C",
+    "explanation": "√2 = 1.41421356… is a non-terminating, non-repeating decimal, so it is irrational. √4 = 2 (rational), 0.75 and 3/7 are rational.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-05",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Profit and Loss",
+    "difficulty": 2,
+    "question": "A shopkeeper buys an article for ₹400 and sells it for ₹500. What is the profit percentage?",
+    "options": [
+      { "id": "A", "text": "20%" },
+      { "id": "B", "text": "25%" },
+      { "id": "C", "text": "10%" },
+      { "id": "D", "text": "50%" }
+    ],
+    "correctOption": "B",
+    "explanation": "Profit = 500 − 400 = 100. Profit % = (100/400) × 100 = 25%.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-06",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Simple and Compound Interest",
+    "difficulty": 2,
+    "question": "Find the simple interest on ₹5000 at 8% per annum for 3 years.",
+    "options": [
+      { "id": "A", "text": "₹1200" },
+      { "id": "B", "text": "₹800" },
+      { "id": "C", "text": "₹1500" },
+      { "id": "D", "text": "₹400" }
+    ],
+    "correctOption": "A",
+    "explanation": "SI = (P × R × T)/100 = (5000 × 8 × 3)/100 = 1200.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-07",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "HCF and LCM",
+    "difficulty": 2,
+    "question": "The LCM of two numbers is 60 and their HCF is 5. If one number is 15, what is the other?",
+    "options": [
+      { "id": "A", "text": "12" },
+      { "id": "B", "text": "20" },
+      { "id": "C", "text": "30" },
+      { "id": "D", "text": "10" }
+    ],
+    "correctOption": "B",
+    "explanation": "LCM × HCF = Product of two numbers. 60 × 5 = 15 × x → x = 300/15 = 20.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-08",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Time and Work",
+    "difficulty": 2,
+    "question": "A can do a piece of work in 10 days and B can do it in 15 days. In how many days can they complete it together?",
+    "options": [
+      { "id": "A", "text": "6 days" },
+      { "id": "B", "text": "5 days" },
+      { "id": "C", "text": "8 days" },
+      { "id": "D", "text": "12 days" }
+    ],
+    "correctOption": "A",
+    "explanation": "A's rate = 1/10, B's rate = 1/15. Together = 1/10 + 1/15 = 5/30 = 1/6. Time = 6 days.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-09",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Speed, Distance, Time",
+    "difficulty": 2,
+    "question": "A train travels 240 km in 4 hours. What is its speed in km/h?",
+    "options": [
+      { "id": "A", "text": "60 km/h" },
+      { "id": "B", "text": "80 km/h" },
+      { "id": "C", "text": "40 km/h" },
+      { "id": "D", "text": "120 km/h" }
+    ],
+    "correctOption": "A",
+    "explanation": "Speed = Distance/Time = 240/4 = 60 km/h.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-10",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Simple and Compound Interest",
+    "difficulty": 3,
+    "question": "Find the compound interest on ₹8000 at 10% per annum for 2 years, compounded annually.",
+    "options": [
+      { "id": "A", "text": "₹1600" },
+      { "id": "B", "text": "₹1680" },
+      { "id": "C", "text": "₹1800" },
+      { "id": "D", "text": "₹1760" }
+    ],
+    "correctOption": "B",
+    "explanation": "Amount = P(1 + R/100)² = 8000(1.1)² = 8000 × 1.21 = 9680. CI = 9680 − 8000 = ₹1680.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-11",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Speed, Distance, Time",
+    "difficulty": 3,
+    "question": "Two trains start from the same station in opposite directions. One travels at 50 km/h and the other at 70 km/h. After how many hours will they be 360 km apart?",
+    "options": [
+      { "id": "A", "text": "2 hours" },
+      { "id": "B", "text": "4 hours" },
+      { "id": "C", "text": "3 hours" },
+      { "id": "D", "text": "6 hours" }
+    ],
+    "correctOption": "C",
+    "explanation": "Relative speed = 50 + 70 = 120 km/h. Time = 360/120 = 3 hours.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-12",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Profit and Loss",
+    "difficulty": 3,
+    "question": "A man sells two articles at ₹600 each. On one he gains 20% and on the other he loses 20%. What is his overall gain or loss?",
+    "options": [
+      { "id": "A", "text": "No gain no loss" },
+      { "id": "B", "text": "4% loss" },
+      { "id": "C", "text": "4% gain" },
+      { "id": "D", "text": "2% loss" }
+    ],
+    "correctOption": "B",
+    "explanation": "CP₁ = 600/1.2 = 500. CP₂ = 600/0.8 = 750. Total CP = 1250, Total SP = 1200. Loss = 50. Loss% = (50/1250) × 100 = 4%.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-ARI-13",
+    "subject": "Mathematics",
+    "topic": "Arithmetic",
+    "competency": "Time and Work",
+    "difficulty": 3,
+    "question": "A and B together can complete a task in 12 days. A alone can do it in 20 days. How many days will B alone take?",
+    "options": [
+      { "id": "A", "text": "25 days" },
+      { "id": "B", "text": "30 days" },
+      { "id": "C", "text": "35 days" },
+      { "id": "D", "text": "40 days" }
+    ],
+    "correctOption": "B",
+    "explanation": "Rate of (A+B) = 1/12, Rate of A = 1/20. Rate of B = 1/12 − 1/20 = (5−3)/60 = 2/60 = 1/30. B takes 30 days.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-01",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Trigonometric Ratios",
+    "difficulty": 1,
+    "question": "What is the value of sin 30°?",
+    "options": [
+      { "id": "A", "text": "1/2" },
+      { "id": "B", "text": "1/√2" },
+      { "id": "C", "text": "√3/2" },
+      { "id": "D", "text": "1" }
+    ],
+    "correctOption": "A",
+    "explanation": "sin 30° = 1/2, a standard trigonometric value.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-02",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Trigonometric Ratios",
+    "difficulty": 1,
+    "question": "What is the value of cos 60°?",
+    "options": [
+      { "id": "A", "text": "√3/2" },
+      { "id": "B", "text": "1/2" },
+      { "id": "C", "text": "0" },
+      { "id": "D", "text": "1" }
+    ],
+    "correctOption": "B",
+    "explanation": "cos 60° = 1/2, a standard trigonometric value.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-03",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Trigonometric Ratios",
+    "difficulty": 1,
+    "question": "What is the value of tan 45°?",
+    "options": [
+      { "id": "A", "text": "1" },
+      { "id": "B", "text": "0" },
+      { "id": "C", "text": "√3" },
+      { "id": "D", "text": "1/√3" }
+    ],
+    "correctOption": "A",
+    "explanation": "tan 45° = sin 45°/cos 45° = (1/√2)/(1/√2) = 1.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-04",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Trigonometric Ratios",
+    "difficulty": 1,
+    "question": "In a right triangle, if the opposite side is 3 and the hypotenuse is 5, what is sin θ?",
+    "options": [
+      { "id": "A", "text": "3/5" },
+      { "id": "B", "text": "4/5" },
+      { "id": "C", "text": "3/4" },
+      { "id": "D", "text": "5/3" }
+    ],
+    "correctOption": "A",
+    "explanation": "sin θ = opposite/hypotenuse = 3/5.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-05",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Trigonometric Identities",
+    "difficulty": 2,
+    "question": "What is the value of sin²60° + cos²60°?",
+    "options": [
+      { "id": "A", "text": "1" },
+      { "id": "B", "text": "0" },
+      { "id": "C", "text": "3/4" },
+      { "id": "D", "text": "1/2" }
+    ],
+    "correctOption": "A",
+    "explanation": "By the Pythagorean identity: sin²θ + cos²θ = 1 for any angle θ.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-06",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Trigonometric Identities",
+    "difficulty": 2,
+    "question": "Simplify: (1 − cos²θ) / sin θ",
+    "options": [
+      { "id": "A", "text": "sin θ" },
+      { "id": "B", "text": "cos θ" },
+      { "id": "C", "text": "tan θ" },
+      { "id": "D", "text": "1" }
+    ],
+    "correctOption": "A",
+    "explanation": "1 − cos²θ = sin²θ. So sin²θ / sin θ = sin θ.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-07",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Heights and Distances",
+    "difficulty": 2,
+    "question": "From a point on the ground, the angle of elevation to the top of a 20 m building is 45°. How far is the point from the base of the building?",
+    "options": [
+      { "id": "A", "text": "20 m" },
+      { "id": "B", "text": "10 m" },
+      { "id": "C", "text": "20√2 m" },
+      { "id": "D", "text": "40 m" }
+    ],
+    "correctOption": "A",
+    "explanation": "tan 45° = height/distance → 1 = 20/d → d = 20 m.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-08",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Complementary Angles",
+    "difficulty": 2,
+    "question": "What is the value of sin 35° cos 55° + cos 35° sin 55°?",
+    "options": [
+      { "id": "A", "text": "1" },
+      { "id": "B", "text": "0" },
+      { "id": "C", "text": "√3/2" },
+      { "id": "D", "text": "1/2" }
+    ],
+    "correctOption": "A",
+    "explanation": "This is sin(35° + 55°) = sin 90° = 1. Alternatively, sin 35° = cos 55° and cos 35° = sin 55°, so it equals cos²55° + sin²55° = 1.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-09",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Trigonometric Identities",
+    "difficulty": 2,
+    "question": "If sec θ = 5/3, what is the value of tan θ?",
+    "options": [
+      { "id": "A", "text": "3/4" },
+      { "id": "B", "text": "4/3" },
+      { "id": "C", "text": "5/4" },
+      { "id": "D", "text": "4/5" }
+    ],
+    "correctOption": "B",
+    "explanation": "sec θ = 5/3 → cos θ = 3/5. sin θ = √(1 − 9/25) = √(16/25) = 4/5. tan θ = sin θ / cos θ = (4/5)/(3/5) = 4/3.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-10",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Heights and Distances",
+    "difficulty": 3,
+    "question": "From the top of a 50 m lighthouse, the angle of depression to a boat is 30°. How far is the boat from the base of the lighthouse? (Use √3 ≈ 1.73)",
+    "options": [
+      { "id": "A", "text": "86.5 m" },
+      { "id": "B", "text": "50 m" },
+      { "id": "C", "text": "100 m" },
+      { "id": "D", "text": "25√3 m" }
+    ],
+    "correctOption": "A",
+    "explanation": "tan 30° = 50/d → (1/√3) = 50/d → d = 50√3 ≈ 50 × 1.73 = 86.5 m.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-11",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Trigonometric Identities",
+    "difficulty": 3,
+    "question": "Prove that the expression (sin θ + cos θ)² + (sin θ − cos θ)² equals which value?",
+    "options": [
+      { "id": "A", "text": "2" },
+      { "id": "B", "text": "1" },
+      { "id": "C", "text": "0" },
+      { "id": "D", "text": "4 sin θ cos θ" }
+    ],
+    "correctOption": "A",
+    "explanation": "Expand: sin²θ + 2sinθcosθ + cos²θ + sin²θ − 2sinθcosθ + cos²θ = 2(sin²θ + cos²θ) = 2.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-12",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Heights and Distances",
+    "difficulty": 3,
+    "question": "The angles of elevation of the top of a tower from two points at distances 36 m and 16 m from the base are complementary. What is the height of the tower?",
+    "options": [
+      { "id": "A", "text": "24 m" },
+      { "id": "B", "text": "20 m" },
+      { "id": "C", "text": "26 m" },
+      { "id": "D", "text": "18 m" }
+    ],
+    "correctOption": "A",
+    "explanation": "Let the angles be α and (90°−α). tan α = h/16, tan(90°−α) = cot α = h/36. So tan α × cot α = (h/16)(h/36) → 1 = h²/576 → h² = 576 → h = 24 m.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-TRI-13",
+    "subject": "Mathematics",
+    "topic": "Trigonometry",
+    "competency": "Complementary Angles",
+    "difficulty": 3,
+    "question": "Without using tables, evaluate: (cos²25° + cos²65°) / (sin²18° + sin²72°)",
+    "options": [
+      { "id": "A", "text": "1" },
+      { "id": "B", "text": "0" },
+      { "id": "C", "text": "2" },
+      { "id": "D", "text": "1/2" }
+    ],
+    "correctOption": "A",
+    "explanation": "cos 65° = sin 25°, so cos²25° + cos²65° = cos²25° + sin²25° = 1. Similarly sin 72° = cos 18°, so sin²18° + sin²72° = sin²18° + cos²18° = 1. Result = 1/1 = 1.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-01",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Mean",
+    "difficulty": 1,
+    "question": "Find the mean of 4, 6, 8, 10, 12.",
+    "options": [
+      { "id": "A", "text": "8" },
+      { "id": "B", "text": "10" },
+      { "id": "C", "text": "6" },
+      { "id": "D", "text": "9" }
+    ],
+    "correctOption": "A",
+    "explanation": "Mean = (4 + 6 + 8 + 10 + 12)/5 = 40/5 = 8.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-02",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Median",
+    "difficulty": 1,
+    "question": "Find the median of 3, 7, 1, 9, 5.",
+    "options": [
+      { "id": "A", "text": "5" },
+      { "id": "B", "text": "7" },
+      { "id": "C", "text": "3" },
+      { "id": "D", "text": "9" }
+    ],
+    "correctOption": "A",
+    "explanation": "Arrange in order: 1, 3, 5, 7, 9. The middle value is 5.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-03",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Mode",
+    "difficulty": 1,
+    "question": "Find the mode of: 2, 3, 5, 3, 7, 3, 8.",
+    "options": [
+      { "id": "A", "text": "3" },
+      { "id": "B", "text": "5" },
+      { "id": "C", "text": "7" },
+      { "id": "D", "text": "2" }
+    ],
+    "correctOption": "A",
+    "explanation": "The mode is the value that appears most frequently. 3 appears 3 times, more than any other value.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-04",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Range",
+    "difficulty": 1,
+    "question": "What is the range of the data set: 15, 22, 8, 30, 12?",
+    "options": [
+      { "id": "A", "text": "22" },
+      { "id": "B", "text": "18" },
+      { "id": "C", "text": "15" },
+      { "id": "D", "text": "30" }
+    ],
+    "correctOption": "A",
+    "explanation": "Range = Maximum − Minimum = 30 − 8 = 22.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-05",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Mean of Grouped Data",
+    "difficulty": 2,
+    "question": "The marks of 5 students are: 40, 50, 60, 70, 80. If each mark is increased by 10, what is the new mean?",
+    "options": [
+      { "id": "A", "text": "70" },
+      { "id": "B", "text": "60" },
+      { "id": "C", "text": "80" },
+      { "id": "D", "text": "50" }
+    ],
+    "correctOption": "A",
+    "explanation": "Original mean = (40+50+60+70+80)/5 = 60. If each value increases by 10, the new mean = 60 + 10 = 70.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-06",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Cumulative Frequency",
+    "difficulty": 2,
+    "question": "In a frequency distribution, the cumulative frequency just before a class is 22, the frequency of the class is 15, and the total frequency is 50. What is the cumulative frequency of that class?",
+    "options": [
+      { "id": "A", "text": "37" },
+      { "id": "B", "text": "50" },
+      { "id": "C", "text": "28" },
+      { "id": "D", "text": "15" }
+    ],
+    "correctOption": "A",
+    "explanation": "Cumulative frequency = Previous CF + Frequency of class = 22 + 15 = 37.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-07",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Probability",
+    "difficulty": 2,
+    "question": "A die is thrown once. What is the probability of getting a number greater than 4?",
+    "options": [
+      { "id": "A", "text": "1/3" },
+      { "id": "B", "text": "1/2" },
+      { "id": "C", "text": "2/3" },
+      { "id": "D", "text": "1/6" }
+    ],
+    "correctOption": "A",
+    "explanation": "Numbers greater than 4 are 5 and 6. Probability = 2/6 = 1/3.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-08",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Probability",
+    "difficulty": 2,
+    "question": "Two coins are tossed simultaneously. What is the probability of getting at least one head?",
+    "options": [
+      { "id": "A", "text": "1/2" },
+      { "id": "B", "text": "3/4" },
+      { "id": "C", "text": "1/4" },
+      { "id": "D", "text": "1" }
+    ],
+    "correctOption": "B",
+    "explanation": "Total outcomes: HH, HT, TH, TT (4 outcomes). Favorable (at least one head): HH, HT, TH (3). Probability = 3/4.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-09",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Mean of Grouped Data",
+    "difficulty": 2,
+    "question": "For a grouped frequency distribution with class intervals 0–10, 10–20, 20–30, 30–40 and frequencies 5, 10, 15, 10 respectively, what is the class mark of the modal class?",
+    "options": [
+      { "id": "A", "text": "25" },
+      { "id": "B", "text": "15" },
+      { "id": "C", "text": "35" },
+      { "id": "D", "text": "5" }
+    ],
+    "correctOption": "A",
+    "explanation": "The modal class has the highest frequency (15), which is 20–30. Class mark = (20 + 30)/2 = 25.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-10",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Median of Grouped Data",
+    "difficulty": 3,
+    "question": "In a grouped data set with N = 50, the cumulative frequency just before the median class is 18, the frequency of the median class is 12, the lower boundary of the median class is 30, and the class width is 10. Find the median.",
+    "options": [
+      { "id": "A", "text": "35.83" },
+      { "id": "B", "text": "30" },
+      { "id": "C", "text": "40" },
+      { "id": "D", "text": "32.5" }
+    ],
+    "correctOption": "A",
+    "explanation": "Median = L + [(N/2 − CF)/f] × h = 30 + [(25 − 18)/12] × 10 = 30 + (7/12) × 10 = 30 + 5.83 = 35.83.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-11",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Probability",
+    "difficulty": 3,
+    "question": "A bag contains 5 red, 4 blue, and 3 green balls. If two balls are drawn at random without replacement, what is the probability that both are red?",
+    "options": [
+      { "id": "A", "text": "5/33" },
+      { "id": "B", "text": "25/144" },
+      { "id": "C", "text": "10/66" },
+      { "id": "D", "text": "1/6" }
+    ],
+    "correctOption": "A",
+    "explanation": "P(both red) = (5/12) × (4/11) = 20/132 = 5/33.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-12",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Standard Deviation",
+    "difficulty": 3,
+    "question": "Find the variance of the data set: 2, 4, 6, 8, 10.",
+    "options": [
+      { "id": "A", "text": "8" },
+      { "id": "B", "text": "4" },
+      { "id": "C", "text": "10" },
+      { "id": "D", "text": "6" }
+    ],
+    "correctOption": "A",
+    "explanation": "Mean = 6. Deviations: −4, −2, 0, 2, 4. Squared deviations: 16, 4, 0, 4, 16. Variance = (16+4+0+4+16)/5 = 40/5 = 8.",
+    "approvalStatus": "APPROVED"
+  },
+  {
+    "id": "MATH-STA-13",
+    "subject": "Mathematics",
+    "topic": "Statistics",
+    "competency": "Probability",
+    "difficulty": 3,
+    "question": "Cards numbered 1 to 20 are put in a box. A card is drawn at random. What is the probability that the number on the card is a prime number?",
+    "options": [
+      { "id": "A", "text": "2/5" },
+      { "id": "B", "text": "1/4" },
+      { "id": "C", "text": "3/10" },
+      { "id": "D", "text": "1/2" }
+    ],
+    "correctOption": "A",
+    "explanation": "Prime numbers from 1 to 20: 2, 3, 5, 7, 11, 13, 17, 19 — that's 8 primes. Probability = 8/20 = 2/5.",
+    "approvalStatus": "APPROVED"
+  }
+]
