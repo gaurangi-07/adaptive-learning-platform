@@ -34,6 +34,22 @@ model AdaptiveAssessment {
   updatedAt          DateTime             @updatedAt
 
   // Relationships
+
+/// Baseline result generated after the pre‑assessment.
+model BaselineResult {
+  id                Int      @id @default(autoincrement())
+  studentId         Int      @unique
+  overallAccuracy   Float    // percentage (0‑100)
+  totalQuestions    Int
+  correctAnswers    Int
+  topicProficiency  Json     // e.g. { "DBMS": 0.8, "DSA": 0.6 }
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relation
+  student           Student  @relation(fields: [studentId], references: [id])
+}
+
   questions          AssessmentQuestion[]
   responses          StudentResponse[]
   topicProficiencies TopicProficiency[]
@@ -64,6 +80,22 @@ model AssessmentQuestion {
   presentedAt      DateTime            @default(now())
 
   // Relationships
+
+/// Baseline result generated after the pre‑assessment.
+model BaselineResult {
+  id                Int      @id @default(autoincrement())
+  studentId         Int      @unique
+  overallAccuracy   Float    // percentage (0‑100)
+  totalQuestions    Int
+  correctAnswers    Int
+  topicProficiency  Json     // e.g. { "DBMS": 0.8, "DSA": 0.6 }
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relation
+  student           Student  @relation(fields: [studentId], references: [id])
+}
+
   response         StudentResponse?
 
   @@index([assessmentId])
@@ -162,6 +194,22 @@ model Question {
   updatedAt       DateTime              @updatedAt
 
   // Relationships
+
+/// Baseline result generated after the pre‑assessment.
+model BaselineResult {
+  id                Int      @id @default(autoincrement())
+  studentId         Int      @unique
+  overallAccuracy   Float    // percentage (0‑100)
+  totalQuestions    Int
+  correctAnswers    Int
+  topicProficiency  Json     // e.g. { "DBMS": 0.8, "DSA": 0.6 }
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relation
+  student           Student  @relation(fields: [studentId], references: [id])
+}
+
   options         QuestionOption[]
   reviewHistory   QuestionReviewHistory[]
   aiGeneration    AIGenerationLog?      @relation(fields: [aiGenerationId], references: [id])
@@ -200,6 +248,22 @@ model AIGenerationLog {
   createdAt       DateTime   @default(now())
 
   // Relationships
+
+/// Baseline result generated after the pre‑assessment.
+model BaselineResult {
+  id                Int      @id @default(autoincrement())
+  studentId         Int      @unique
+  overallAccuracy   Float    // percentage (0‑100)
+  totalQuestions    Int
+  correctAnswers    Int
+  topicProficiency  Json     // e.g. { "DBMS": 0.8, "DSA": 0.6 }
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relation
+  student           Student  @relation(fields: [studentId], references: [id])
+}
+
   questions       Question[]
 
   @@index([createdAt])
@@ -237,6 +301,22 @@ model Student {
   updatedAt    DateTime @updatedAt
 
   // Relationships
+
+/// Baseline result generated after the pre‑assessment.
+model BaselineResult {
+  id                Int      @id @default(autoincrement())
+  studentId         Int      @unique
+  overallAccuracy   Float    // percentage (0‑100)
+  totalQuestions    Int
+  correctAnswers    Int
+  topicProficiency  Json     // e.g. { "DBMS": 0.8, "DSA": 0.6 }
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relation
+  student           Student  @relation(fields: [studentId], references: [id])
+}
+
   adaptiveAssessments AdaptiveAssessment[] // assessments taken by this student
 }
 
