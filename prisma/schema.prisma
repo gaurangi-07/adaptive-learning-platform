@@ -223,6 +223,23 @@ model QuestionReviewHistory {
 
 // -------------------------------------------------------------------
 // ENUMS & INTEGRATION TYPES
+
+/// Represents a student (module 1 user) in the system.
+model Student {
+  id           Int      @id @default(autoincrement())
+  fullName     String
+  email        String   @unique
+  hashedPassword String
+  college      String?
+  branch       String?
+  yearOfStudy  Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  adaptiveAssessments AdaptiveAssessment[] // assessments taken by this student
+}
+
 // -------------------------------------------------------------------
 
 enum QuestionStatus {
