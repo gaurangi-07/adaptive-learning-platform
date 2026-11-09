@@ -138,8 +138,99 @@ model DifficultyHistory {
 }
 
 // -------------------------------------------------------------------
+// MODULE 3 MODELS
+// -------------------------------------------------------------------
+
+/// Represents a question in the Question Bank managed by Module 3.
+model Question {
+  id              String                @id @default(uuid())
+  subject         String
+  topic           String
+  competency      String                @default("")
+  difficulty      Int                   // 1=Easy, 2=Medium, 3=Hard
+  questionText    String                @db.Text
+  correctOption   String                // "A", "B", "C", "D"
+  explanation     String                @db.Text
+  status          QuestionStatus        @default(PENDING)
+  createdBy       String?               // teacher/admin identifier (from Module 1)
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  source          String                @default("MANUAL") // "MANUAL" or "AI"
+  aiGenerationId  String?               // FK to AIGenerationLog
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  // Relationships
+  options         QuestionOption[]
+  reviewHistory   QuestionReviewHistory[]
+  aiGeneration    AIGenerationLog?      @relation(fields: [aiGenerationId], references: [id])
+
+  @@index([subject, topic, difficulty])
+  @@index([status])
+  @@index([createdAt])
+  @@map("questions")
+}
+
+/// Represents one of the four answer options (A/B/C/D) for a question.
+model QuestionOption {
+  id           String   @id @default(uuid())
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionLabel  String   // "A", "B", "C", "D"
+  optionText   String   @db.Text
+  isCorrect    Boolean  @default(false)
+
+  @@index([questionId])
+  @@map("question_options")
+}
+
+/// Audit log for every AI question generation batch.
+model AIGenerationLog {
+  id              String     @id @default(uuid())
+  provider        String     // "mock" or "openai"
+  subject         String
+  topic           String
+  difficulty      Int
+  requestedCount  Int
+  generatedCount  Int        @default(0)
+  validCount      Int        @default(0)
+  status          String     @default("PENDING") // "PENDING", "COMPLETED", "FAILED"
+  errorMessage    String?
+  createdAt       DateTime   @default(now())
+
+  // Relationships
+  questions       Question[]
+
+  @@index([createdAt])
+  @@map("ai_generation_logs")
+}
+
+/// Audit trail for every status change on a question (approve/reject/etc.).
+model QuestionReviewHistory {
+  id               String         @id @default(uuid())
+  questionId       String
+  question         Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  reviewerId       String?
+  previousStatus   QuestionStatus
+  newStatus        QuestionStatus
+  rejectionReason  String?
+  reviewedAt       DateTime       @default(now())
+
+  @@index([questionId])
+  @@map("question_review_history")
+}
+
+// -------------------------------------------------------------------
 // ENUMS & INTEGRATION TYPES
 // -------------------------------------------------------------------
+
+enum QuestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
 
 enum AssessmentStatus {
   IN_PROGRESS

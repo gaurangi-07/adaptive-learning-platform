@@ -203,7 +203,7 @@ export default function AssessmentCompletePage() {
         )}
 
         {/* Module 3 export note */}
-        <div className="card border-indigo-200 bg-indigo-50/60">
+        <div className="card border-indigo-200 bg-indigo-50/60 flex items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <span className="text-2xl">📤</span>
             <div>
@@ -214,6 +214,13 @@ export default function AssessmentCompletePage() {
               </p>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => navigate(`/module3/analytics`)}
+            className="px-3 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 whitespace-nowrap shadow-sm"
+          >
+            Open Analytics →
+          </button>
         </div>
 
         {/* Action buttons */}
@@ -237,4 +244,3 @@ export default function AssessmentCompletePage() {
     </div>
   );
 }
-

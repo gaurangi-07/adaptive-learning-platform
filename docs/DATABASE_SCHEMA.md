@@ -99,6 +99,74 @@ Complete audit log of every difficulty decision.
 
 ---
 
+## Module 3 Models (Person 3 — Question Bank & Analytics)
+
+### Question
+Stores all questions (manually created and AI-generated) with review status.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| subject | String | e.g., "Mathematics" |
+| topic | String | e.g., "Algebra" |
+| competency | String | Specific skill / subtopic |
+| difficulty | Int | 1 (Easy), 2 (Medium), 3 (Hard) |
+| questionText | Text | Full question statement |
+| correctOption | String | "A", "B", "C", or "D" |
+| explanation | Text | Pedagogical explanation |
+| status | Enum | `PENDING`, `APPROVED`, `REJECTED`, `ARCHIVED` |
+| source | String | `"MANUAL"` or `"AI"` |
+| createdBy | String? | Teacher/admin ID |
+| reviewedBy | String? | Reviewer ID |
+| reviewedAt | DateTime? | Approval/rejection timestamp |
+| rejectionReason | String? | Mandatory reason when rejected |
+| aiGenerationId | UUID? | FK → AIGenerationLog |
+| createdAt | DateTime | Timestamp |
+| updatedAt | DateTime | Timestamp |
+
+### QuestionOption
+Stores the 4 multiple-choice options for each question.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| questionId | UUID | FK → Question (Cascade delete) |
+| optionLabel | String | "A", "B", "C", or "D" |
+| optionText | Text | Option statement |
+| isCorrect | Boolean | Whether this option is the correct answer |
+
+### AIGenerationLog
+Audit log for AI question generation batches.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| provider | String | `"mock"` or `"openai"` |
+| subject | String | Target subject |
+| topic | String | Target topic |
+| difficulty | Int | 1, 2, or 3 |
+| requestedCount | Int | Number of questions requested |
+| generatedCount | Int | Total parsed from AI |
+| validCount | Int | Successfully validated and saved |
+| status | String | `"PENDING"`, `"COMPLETED"`, `"FAILED"` |
+| errorMessage | String? | Error details if failed |
+| createdAt | DateTime | Generation timestamp |
+
+### QuestionReviewHistory
+Audit trail tracking question status transitions.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID | Primary key |
+| questionId | UUID | FK → Question |
+| reviewerId | String? | Teacher ID |
+| previousStatus | Enum | Status before change |
+| newStatus | Enum | Status after change |
+| rejectionReason | String? | Rejection reason if applicable |
+| reviewedAt | DateTime | Review timestamp |
+
+---
+
 ## Cross-Module Connections
 
 ```
@@ -118,4 +186,3 @@ npx prisma migrate dev --name init --schema prisma/schema.prisma
 # View current schema in browser
 npx prisma studio --schema prisma/schema.prisma
 ```
-

@@ -17,7 +17,11 @@
     "build": "npm --prefix client run build",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
+    "prisma:seed": "node prisma/seed.js",
     "prisma:studio": "npx prisma studio"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "keywords": [
     "adaptive-learning",
@@ -27,5 +31,8 @@
     "education"
   ],
   "author": "Aryan Thakur",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^10.0.7"
+  }
 }

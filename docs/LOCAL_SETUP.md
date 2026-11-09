@@ -46,8 +46,8 @@ npx prisma migrate dev --name init --schema prisma/schema.prisma
 cd server
 npm run dev
 ```
-Server starts at `http://localhost:5000`  
-Health check: `http://localhost:5000/api/adaptive/health`
+Server starts at `http://localhost:5001`
+Health check: `http://localhost:5001/api/adaptive/health`
 
 ## 6. Install & Start Frontend
 
@@ -75,12 +75,11 @@ Build output appears in `client/dist/`
 
 ## Common Issues
 
-**PostgreSQL not running:**  
+**PostgreSQL not running:**
 Mac: `brew services start postgresql@18`
 
-**Prisma migration errors:**  
+**Prisma migration errors:**
 Reset with: `npx prisma migrate reset --schema prisma/schema.prisma`
 
-**Port already in use:**  
+**Port already in use:**
 Change `PORT=5001` in `.env`
-

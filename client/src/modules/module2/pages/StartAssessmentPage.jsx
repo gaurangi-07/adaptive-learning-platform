@@ -47,8 +47,17 @@ export default function StartAssessmentPage() {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
-            <span>🎓</span> PARAKH Adaptive Learning Platform
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full">
+              <span>🎓</span> PARAKH Adaptive Learning Platform
+            </span>
+            <button
+              type="button"
+              onClick={() => navigate('/module3')}
+              className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 transition-all"
+            >
+              <span>⚙️</span> Teacher Portal (Module 3) →
+            </button>
           </div>
           <h1 className="text-4xl font-extrabold text-slate-900 mb-3 leading-tight">
             Adaptive MCQ Assessment
@@ -166,4 +175,3 @@ export default function StartAssessmentPage() {
     </div>
   );
 }
-

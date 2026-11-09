@@ -6,17 +6,17 @@
  */
 
 const { v4: uuidv4 } = require('uuid');
-const { getPrismaClient } = require('../../prismaClient');
-const { MockStudentBaselineAdapter } = require('../module1/adapters/mockStudentBaselineAdapter');
-const { questionBankAdapter } = require('../module3/adapters/questionBankAdapter');
-const { sanitizeQuestionForClient } = require('../module3/contracts/questionBankContract');
+const { getPrismaClient } = require('../../../prismaClient');
+const { MockStudentBaselineAdapter } = require('../../module1/adapters/mockStudentBaselineAdapter');
+const { questionBankAdapter } = require('../../module3/adapters/questionBankAdapter');
+const { sanitizeQuestionForClient } = require('../../module3/contracts/questionBankContract');
 const {
   computeInitialDifficulty,
   selectNextTopic,
   selectQuestion,
   updateProficiency
-} = require('./algorithms/adaptiveAlgorithm');
-const { AppError } = require('./middleware/errorHandler');
+} = require('../algorithms/adaptiveAlgorithm');
+const { AppError } = require('../middleware/errorHandler');
 
 const DEFAULT_QUESTION_COUNT = parseInt(process.env.SESSION_QUESTION_COUNT, 10) || 10;
 const QUESTION_TIMEOUT_SECONDS = parseInt(process.env.QUESTION_TIMEOUT_SECONDS, 10) || 90;
@@ -649,4 +649,3 @@ class AdaptiveService {
 }
 
 module.exports = { AdaptiveService };
-

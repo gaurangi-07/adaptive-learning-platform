@@ -69,8 +69,11 @@ getQuestions({ subject, topic, difficulty, excludeIds }) {
 - [ ] Module 1: Implement `User`, `StudentProfile`, `PreAssessment` models
 - [ ] Module 1: Update `MockStudentBaselineAdapter.getStudentBaseline()` to real DB
 - [ ] Module 1: Set `ENABLE_MOCK_STUDENT=false` in production `.env`
-- [ ] Module 3: Implement `QuestionBank` model matching `QuestionBankItemSchema`
-- [ ] Module 3: Update `QuestionBankAdapter.getQuestions()` to real DB
-- [ ] Module 3: Set `ENABLE_MOCK_QUESTION_BANK=false` in production `.env`
-- [ ] Module 3: Consume `GET /api/adaptive/:attemptId/summary` for analytics
-
+- [x] Module 3: Implement `Question` & `QuestionOption` models matching `QuestionBankItemSchema`
+- [x] Module 3: Implement AI generation service (OpenAI + Mock fallback)
+- [x] Module 3: Implement duplicate & similarity detection
+- [x] Module 3: Implement teacher review & approval queue
+- [x] Module 3: Update `QuestionBankAdapter.getQuestions()` to query live DB + mock fallback
+- [x] Module 3: Connect approved questions with Module 2 Adaptive Testing
+- [x] Module 3: Implement student analytics & report generation consuming real response data
+- [x] Module 3: Implement full teacher/admin UI (Generator, Bank, Pending Reviews, Analytics, Reports)

@@ -1,4 +1,4 @@
-# Adaptive Learning Platform — Module 2: Adaptive Testing System
+# Adaptive Learning Platform — PARAKH Adaptive Assessment System
 
 ## Project Overview
 
@@ -26,7 +26,7 @@ adaptive-learning-platform/
 │       │   │   ├── hooks/       # React hooks
 │       │   │   ├── services/    # API client calls
 │       │   │   └── utils/       # Utility helpers
-│       │   └── module3/         # Placeholder (Teammate 3)
+│       │   └── module3/         # AI question bank and analytics
 │       ├── App.jsx
 │       └── main.jsx
 ├── server/                      # Node.js + Express backend
@@ -40,15 +40,14 @@ adaptive-learning-platform/
 │       │   │   ├── algorithms/  # Adaptive algorithm
 │       │   │   ├── middleware/  # Validation, error handling
 │       │   │   └── validators/  # Zod schemas
-│       │   └── module3/         # Integration contracts + mock adapter
+│       │   └── module3/         # AI, question bank, review, and analytics
 │       ├── app.js
 │       └── server.js
 ├── prisma/
 │   └── schema.prisma            # Database models
 ├── mocks/
 │   └── questions.json           # 65 sample Mathematics questions
-├── tests/
-│   └── adaptiveAlgorithm.test.js
+├── tests/                       # Adaptive, integration, and Module 3 tests
 ├── docs/
 │   ├── MODULE2_OVERVIEW.md
 │   ├── API_CONTRACTS.md
@@ -81,14 +80,20 @@ cd server && npm install
 # 4. Run Prisma migrations
 cd .. && DATABASE_URL="postgresql://..." npx prisma migrate dev --name init --schema prisma/schema.prisma
 
-# 5. Start backend
-cd server && npm run dev
+# 5. Install frontend dependencies
+cd client && npm install
 
-# 6. Install and start frontend
-cd ../client && npm install && npm run dev
+# 6. Start backend and frontend together from the project root
+cd .. && npm run dev:all
 ```
 
 See [docs/LOCAL_SETUP.md](docs/LOCAL_SETUP.md) for full instructions.
+
+Local URLs:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:5001`
+- Backend health: `http://localhost:5001/api/health`
 
 ---
 
@@ -97,8 +102,42 @@ See [docs/LOCAL_SETUP.md](docs/LOCAL_SETUP.md) for full instructions.
 | Module | Teammate | Status |
 |--------|----------|--------|
 | Module 1 — Student Profiling & Pre-Assessment | Teammate 1 | Placeholder contracts ready |
-| **Module 2 — Adaptive Testing System** | **You (Aryan)** | **Complete** |
-| Module 3 — Question Bank & Analytics | Teammate 3 | Placeholder contracts ready |
+| **Module 2 — Adaptive Testing System** | **Aryan (Person 2)** | **Complete** |
+| **Module 3 — AI Question Bank & Analytics** | **Person 3** | **Complete** |
+
+---
+
+## Module 3 Features (Person 3 — AI Question Bank & Student Analytics)
+
+- ✅ **AI Question Generation**: Automated MCQ generation with subject, topic, and difficulty controls (Groq API + deterministic Mock AI).
+- ✅ **Rigorous MCQ Validation**: Zod-based validation ensuring 4 distinct options (A/B/C/D), exactly 1 correct answer, non-empty statements, explanations, and proper difficulty levels.
+- ✅ **Duplicate & Similarity Detection**: Hybrid character n-gram + word-token Jaccard similarity algorithm detecting exact duplicates and flagging similar questions for review.
+- ✅ **Question Bank Management**: Full CRUD interface with search, multi-field filtering, pagination, and deletion protection.
+- ✅ **Teacher Review Workflow**: Dedicated review queue for `PENDING` questions with inline editing, one-click approvals, and audit-logged rejections with mandatory reasons.
+- ✅ **Seamless Module 2 Integration**: Approved questions automatically feed into Person 2's adaptive engine via `QuestionBankAdapter`.
+- ✅ **Strict Answer-Key Protection**: `correctOption` and `explanation` strictly stripped from all student-facing assessment responses.
+- ✅ **Student Performance Analytics**: Real-time aggregation of accuracy, topic breakdown, difficulty performance, and response times from `StudentResponse` records.
+- ✅ **Data Visualizations**: Recharts-powered bar charts, pie charts, and progression line charts.
+- ✅ **Student Performance Reports**: Printable/PDF official performance transcripts with topic mastery indicators and recommended learning pathways.
+
+### Module 3 API
+
+- `POST /api/ai/generate` - Generate, validate, check, and save questions as `PENDING`.
+- `GET /api/questions` - Search and filter the question bank.
+- `PATCH /api/questions/:id/status` - Approve, reject, or archive questions.
+- `GET /api/analytics/report/:studentId` - Get a full performance report.
+- `GET /api/analytics/topic-performance/:studentId` - Get topic-level results.
+- `GET /api/analytics/difficulty-performance/:studentId` - Get difficulty-level results.
+- `GET /api/analytics/time-performance/:studentId` - Get response-time results.
+
+### Module 3 Workflow
+
+```text
+Groq or mock generation -> validation -> duplicate check -> PENDING
+	-> teacher review -> APPROVED -> Module 2 adaptive assessment
+```
+
+Module 2 receives only approved questions through `QuestionBankAdapter`. Student-facing assessment responses do not include answer keys or explanations before submission.
 
 ---
 
@@ -130,10 +169,26 @@ See [docs/LOCAL_SETUP.md](docs/LOCAL_SETUP.md) for full instructions.
 | `ENABLE_MOCK_STUDENT` | Use mock student baselines (dev only) |
 | `SESSION_QUESTION_COUNT` | Questions per session (default: 10) |
 | `QUESTION_TIMEOUT_SECONDS` | Per-question time limit (default: 90) |
+| `AI_PROVIDER` | `mock`, `groq`, or `openai` (default: `mock`) |
+| `GROQ_API_KEY` | Server-side Groq API key; never commit this value |
+| `GROQ_MODEL` | Groq model, such as `openai/gpt-oss-20b` |
+| `OPENAI_API_KEY` | Optional OpenAI key when `AI_PROVIDER=openai` |
+| `OPENAI_MODEL` | Optional OpenAI model when `AI_PROVIDER=openai` |
+| `ENABLE_MOCK_QUESTION_BANK` | Use approved mock questions instead of database questions |
+
+For live Groq generation, add these values to the local `server/.env` file:
+
+```env
+AI_PROVIDER=groq
+GROQ_API_KEY=your_groq_key
+GROQ_MODEL=openai/gpt-oss-20b
+ENABLE_MOCK_QUESTION_BANK=false
+```
+
+Use `AI_PROVIDER=mock` for development without an external AI key. See the Module 3 guides in [server/src/modules/module3/README.md](server/src/modules/module3/README.md) and [client/src/modules/module3/README.md](client/src/modules/module3/README.md).
 
 ---
 
 ## License
 
 MIT License — University Major Project, 2026
-

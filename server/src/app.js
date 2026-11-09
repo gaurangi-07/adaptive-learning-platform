@@ -3,9 +3,13 @@
  * @description Express application setup for the Adaptive Learning Platform.
  */
 
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const adaptiveRoutes = require('./modules/module2/routes/adaptiveRoutes');
+const questionRoutes = require('./modules/module3/routes/questionRoutes');
+const aiRoutes = require('./modules/module3/routes/aiRoutes');
+const analyticsRoutes = require('./modules/module3/routes/analyticsRoutes');
 const { errorHandler } = require('./modules/module2/middleware/errorHandler');
 
 function createApp() {
@@ -28,7 +32,7 @@ function createApp() {
         modules: {
           module1: 'Placeholder — Student Profiling & Pre-Assessment',
           module2: 'Active — Adaptive Testing System',
-          module3: 'Placeholder — Question Bank & Analytics'
+          module3: 'Active — Question Bank, AI Generation & Analytics'
         },
         timestamp: new Date().toISOString()
       }
@@ -37,6 +41,11 @@ function createApp() {
 
   // Module 2 routes
   app.use('/api/adaptive', adaptiveRoutes);
+
+  // Module 3 routes
+  app.use('/api/questions', questionRoutes);
+  app.use('/api/ai', aiRoutes);
+  app.use('/api/analytics', analyticsRoutes);
 
   // 404 handler
   app.use((req, res) => {
@@ -53,4 +62,3 @@ function createApp() {
 }
 
 module.exports = { createApp };
-
