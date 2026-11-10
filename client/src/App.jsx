@@ -42,6 +42,8 @@ export default function App() {
         <Route path="/module1/dashboard" element={<Dashboard />} />
         <Route path="/module1/pre-assessment" element={<PreAssessmentIntro />} />
         <Route path="/module1/pre-assessment/:attemptId" element={<PreAssessmentMCQ />} />
+        <Route path="/pre-assessment" element={<PreAssessmentIntro />} />
+        <Route path="/pre-assessment/:attemptId" element={<PreAssessmentMCQ />} />
         <Route path="/module1" element={<Navigate to="/" replace />} />
 
         {/* Module 2 — Computer Adaptive Testing Engine */}

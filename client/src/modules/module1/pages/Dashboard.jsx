@@ -5,15 +5,17 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { fetchDashboard } from '../api/profileApi';
 import { logout, getCurrentStudent } from '../api/authApi';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [completedNotice, setCompletedNotice] = useState(Boolean(location.state?.assessmentCompleted));
 
   const localStudent = getCurrentStudent();
 
@@ -102,6 +104,22 @@ export default function Dashboard() {
             </button>
           </div>
         </header>
+
+        {completedNotice && (
+          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl">🎉</span>
+              <span>Pre-Assessment successfully submitted! Your baseline proficiency scores and starting ability tier have been updated below.</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCompletedNotice(false)}
+              className="text-emerald-500 hover:text-emerald-800 font-bold ml-2 text-sm"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {error && (
           <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
