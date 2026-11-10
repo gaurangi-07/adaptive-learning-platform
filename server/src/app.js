@@ -45,6 +45,12 @@ function createApp() {
   // Auth routes
   app.use('/api/auth', authRoutes);
 
+  // Student routes (profile, dashboard)
+  const preAssessmentRoutes = require('./modules/module1/routes/preAssessmentRoutes');
+  app.use('/api/assessment', preAssessmentRoutes);
+
+  app.use('/api/student', studentRoutes);
+
   app.use('/api/adaptive', adaptiveRoutes);
 
   // Module 3 routes

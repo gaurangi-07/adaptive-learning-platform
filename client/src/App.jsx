@@ -4,9 +4,13 @@
  */
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Signup from './modules/module1/pages/Signup';
+import Login from './modules/module1/pages/Login';
+import Profile from './modules/module1/pages/Profile';
+import Dashboard from './modules/module1/pages/Dashboard';
 import StartAssessmentPage from './modules/module2/pages/StartAssessmentPage';
-import AdaptiveQuizPage from './modules/module2/pages/AdaptiveQuizPage';
-import AssessmentCompletePage from './modules/module2/pages/AssessmentCompletePage';
+import PreAssessmentIntro from './modules/module1/pages/PreAssessmentIntro';
+import PreAssessmentMCQ from './modules/module1/pages/PreAssessmentMCQ';
 import HistoryPage from './modules/module2/pages/HistoryPage';
 
 // Module 3 — Person 3 Pages
@@ -36,14 +40,13 @@ export default function App() {
         <Route path="/module3/reports" element={<StudentPerformanceReportPage />} />
 
         {/* Module 1 placeholder */}
-        <Route path="/module1/*" element={
-          <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-slate-700 mb-2">Module 1</h2>
-              <p className="text-slate-500">Student Profiling & Pre-Assessment — Teammate 1's work</p>
-            </div>
-          </div>
-        } />
+                {/* Module 1 – Student Management */}
+        <Route path="/module1/signup" element={<Signup />} />
+        <Route path="/module1/login" element={<Login />} />
+        <Route path="/module1/profile" element={<Profile />} />
+        <Route path="/module1/dashboard" element={<Dashboard />} />
+        {/* Default redirect for /module1 */}
+        <Route path="/module1" element={<Navigate to="/module1/login" replace />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

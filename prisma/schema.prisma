@@ -33,7 +33,34 @@ model AdaptiveAssessment {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
-  // Relationships
+  // Add Pre‑assessment attempt model
+model PreAssessmentAttempt {
+  id               String   @id @default(uuid())
+  studentId        Int
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+  status           AssessmentStatus @default(IN_PROGRESS)
+  totalQuestions   Int
+  correctAnswers   Int @default(0)
+  topicProficiency Json? // will be filled on finish
+
+  student          Student @relation(fields: [studentId], references: [id])
+  // For simplicity we store only question IDs as JSON
+  questionIds      Json    // ["q1","q2",...]
+}
+
+// Store each answer for a pre‑assessment attempt
+model PreAssessmentResponse {
+  id                String   @id @default(uuid())
+  attemptId         String
+  questionId        String
+  selectedOption    String?   // "A"‑"D"
+  responseTimeSec   Float
+  answeredAt        DateTime @default(now())
+
+  attempt           PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+}
+
 
 /// Baseline result generated after the pre‑assessment.
 model BaselineResult {
@@ -79,7 +106,34 @@ model AssessmentQuestion {
   allocatedSeconds Int                 @default(90)
   presentedAt      DateTime            @default(now())
 
-  // Relationships
+  // Add Pre‑assessment attempt model
+model PreAssessmentAttempt {
+  id               String   @id @default(uuid())
+  studentId        Int
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+  status           AssessmentStatus @default(IN_PROGRESS)
+  totalQuestions   Int
+  correctAnswers   Int @default(0)
+  topicProficiency Json? // will be filled on finish
+
+  student          Student @relation(fields: [studentId], references: [id])
+  // For simplicity we store only question IDs as JSON
+  questionIds      Json    // ["q1","q2",...]
+}
+
+// Store each answer for a pre‑assessment attempt
+model PreAssessmentResponse {
+  id                String   @id @default(uuid())
+  attemptId         String
+  questionId        String
+  selectedOption    String?   // "A"‑"D"
+  responseTimeSec   Float
+  answeredAt        DateTime @default(now())
+
+  attempt           PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+}
+
 
 /// Baseline result generated after the pre‑assessment.
 model BaselineResult {
@@ -193,7 +247,34 @@ model Question {
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 
-  // Relationships
+  // Add Pre‑assessment attempt model
+model PreAssessmentAttempt {
+  id               String   @id @default(uuid())
+  studentId        Int
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+  status           AssessmentStatus @default(IN_PROGRESS)
+  totalQuestions   Int
+  correctAnswers   Int @default(0)
+  topicProficiency Json? // will be filled on finish
+
+  student          Student @relation(fields: [studentId], references: [id])
+  // For simplicity we store only question IDs as JSON
+  questionIds      Json    // ["q1","q2",...]
+}
+
+// Store each answer for a pre‑assessment attempt
+model PreAssessmentResponse {
+  id                String   @id @default(uuid())
+  attemptId         String
+  questionId        String
+  selectedOption    String?   // "A"‑"D"
+  responseTimeSec   Float
+  answeredAt        DateTime @default(now())
+
+  attempt           PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+}
+
 
 /// Baseline result generated after the pre‑assessment.
 model BaselineResult {
@@ -247,7 +328,34 @@ model AIGenerationLog {
   errorMessage    String?
   createdAt       DateTime   @default(now())
 
-  // Relationships
+  // Add Pre‑assessment attempt model
+model PreAssessmentAttempt {
+  id               String   @id @default(uuid())
+  studentId        Int
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+  status           AssessmentStatus @default(IN_PROGRESS)
+  totalQuestions   Int
+  correctAnswers   Int @default(0)
+  topicProficiency Json? // will be filled on finish
+
+  student          Student @relation(fields: [studentId], references: [id])
+  // For simplicity we store only question IDs as JSON
+  questionIds      Json    // ["q1","q2",...]
+}
+
+// Store each answer for a pre‑assessment attempt
+model PreAssessmentResponse {
+  id                String   @id @default(uuid())
+  attemptId         String
+  questionId        String
+  selectedOption    String?   // "A"‑"D"
+  responseTimeSec   Float
+  answeredAt        DateTime @default(now())
+
+  attempt           PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+}
+
 
 /// Baseline result generated after the pre‑assessment.
 model BaselineResult {
@@ -300,7 +408,34 @@ model Student {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // Relationships
+  // Add Pre‑assessment attempt model
+model PreAssessmentAttempt {
+  id               String   @id @default(uuid())
+  studentId        Int
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+  status           AssessmentStatus @default(IN_PROGRESS)
+  totalQuestions   Int
+  correctAnswers   Int @default(0)
+  topicProficiency Json? // will be filled on finish
+
+  student          Student @relation(fields: [studentId], references: [id])
+  // For simplicity we store only question IDs as JSON
+  questionIds      Json    // ["q1","q2",...]
+}
+
+// Store each answer for a pre‑assessment attempt
+model PreAssessmentResponse {
+  id                String   @id @default(uuid())
+  attemptId         String
+  questionId        String
+  selectedOption    String?   // "A"‑"D"
+  responseTimeSec   Float
+  answeredAt        DateTime @default(now())
+
+  attempt           PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+}
+
 
 /// Baseline result generated after the pre‑assessment.
 model BaselineResult {
