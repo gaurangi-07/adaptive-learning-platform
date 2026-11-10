@@ -7,6 +7,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const adaptiveRoutes = require('./modules/module2/routes/adaptiveRoutes');
+const authRoutes = require('./modules/module1/routes/authRoutes');
+
+
 const questionRoutes = require('./modules/module3/routes/questionRoutes');
 const aiRoutes = require('./modules/module3/routes/aiRoutes');
 const analyticsRoutes = require('./modules/module3/routes/analyticsRoutes');
@@ -39,7 +42,9 @@ function createApp() {
     });
   });
 
-  // Module 2 routes
+  // Auth routes
+  app.use('/api/auth', authRoutes);
+
   app.use('/api/adaptive', adaptiveRoutes);
 
   // Module 3 routes
