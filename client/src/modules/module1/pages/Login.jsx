@@ -1,89 +1,241 @@
-// src/modules/module1/pages/Login.jsx
-// -------------------------------------------------------------------
-// Student login page – React + Tailwind CSS
-// -------------------------------------------------------------------
+/**
+ * @file Login.jsx
+ * @description Modern, responsive student login page for PARAKH Adaptive Learning Platform.
+ * First entry-point of the application.
+ */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { loginStudent } from '../api/authApi';
-import { fetchDashboard } from '../api/profileApi';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+  });
+
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  function validate() {
+    const errs = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const handleSubmit = async (e) => {
+    if (!form.email.trim()) {
+      errs.email = 'Email address is required';
+    } else if (!emailRegex.test(form.email.trim())) {
+      errs.email = 'Please enter a valid email address';
+    }
+
+    if (!form.password) {
+      errs.password = 'Password is required';
+    }
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: null }));
+    }
+    if (generalError) setGeneralError('');
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
-    setError('');
+    setGeneralError('');
+
+    if (!validate()) return;
+
+    setLoading(true);
     try {
-      const resp = await loginStudent(form);
+      const resp = await loginStudent({
+        email: form.email.trim(),
+        password: form.password,
+      });
+
       if (resp.success) {
-        // after login, fetch dashboard to ensure token works, then go to dashboard
-        await fetchDashboard();
         navigate('/module1/dashboard');
       } else {
-        setError(resp.error || 'Login failed');
+        setGeneralError(resp.error || 'Login failed. Please check your credentials.');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Server error');
+      const apiError = err.response?.data?.error || 'Invalid email or password. Please try again.';
+      setGeneralError(apiError);
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="max-w-md mx-auto py-12">
-      <h2 className="text-2xl font-bold text-center mb-6">Student Login</h2>
-      {error && <div className="bg-red-100 text-red-800 p-2 mb-4 rounded">{error}</div>}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="email">Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            value={form.email}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-md">
+
+        {/* Header Branding */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-3 shadow-sm">
+            <span>🎓</span> PARAKH Adaptive Learning
+          </div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Student Sign In</h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Access your personalized adaptive assessments & learning dashboard
+          </p>
         </div>
-        <div className="relative">
-          <label className="block text-sm font-medium mb-1" htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type={showPassword ? 'text' : 'password'}
-            required
-            value={form.password}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-2 top-9 text-sm text-gray-600"
-          >
-            {showPassword ? 'Hide' : 'Show'}
-          </button>
+
+        {/* Login Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 sm:p-8">
+
+          {/* General Error Alert */}
+          {generalError && (
+            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start justify-between gap-2 animate-shake">
+              <div className="flex items-start gap-2">
+                <span className="text-base leading-none">⚠️</span>
+                <span className="font-medium text-xs sm:text-sm">{generalError}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setGeneralError('')}
+                className="text-rose-400 hover:text-rose-700 text-xs font-bold"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+
+            {/* Email Field */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5" htmlFor="email">
+                Email Address <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="e.g. student@college.edu"
+                  className={`w-full px-4 py-3 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 ${
+                    errors.email
+                      ? 'border-rose-300 bg-rose-50/40 focus:ring-rose-400 text-rose-900'
+                      : 'border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-indigo-500 text-slate-900'
+                  }`}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-rose-600 text-xs font-semibold mt-1.5 flex items-center gap-1">
+                  <span>•</span> {errors.email}
+                </p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide" htmlFor="password">
+                  Password <span className="text-rose-500">*</span>
+                </label>
+              </div>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  className={`w-full px-4 py-3 pr-12 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 ${
+                    errors.password
+                      ? 'border-rose-300 bg-rose-50/40 focus:ring-rose-400 text-rose-900'
+                      : 'border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-indigo-500 text-slate-900'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1.5 text-xs font-semibold focus:outline-none"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <span className="flex items-center gap-1">🙈 Hide</span>
+                  ) : (
+                    <span className="flex items-center gap-1">👁️ Show</span>
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-rose-600 text-xs font-semibold mt-1.5 flex items-center gap-1">
+                  <span>•</span> {errors.password}
+                </p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full py-3.5 text-sm font-bold shadow-lg shadow-indigo-200 mt-2 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <span>Signing in…</span>
+                </>
+              ) : (
+                <span>Sign In to Student Portal →</span>
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative my-6 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
+            </div>
+            <span className="relative bg-white px-3 text-xs text-slate-400 uppercase tracking-wider font-medium">
+              New Student?
+            </span>
+          </div>
+
+          {/* Create Account Link */}
+          <div className="text-center">
+            <Link
+              to="/signup"
+              className="inline-flex items-center justify-center w-full py-3 px-4 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all"
+            >
+              Create New Student Account
+            </Link>
+          </div>
         </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Log In
-        </button>
-        <p className="text-center text-sm mt-2">
-          No account?{' '}
-          <span className="text-blue-600 cursor-pointer" onClick={() => navigate('/module1/signup')}>
-            Sign up
-          </span>
+
+        {/* Quick Portal Switcher for Evaluators / Teachers */}
+        <div className="mt-6 p-3 rounded-xl bg-slate-100/80 border border-slate-200 text-center text-xs text-slate-600 flex items-center justify-center gap-3">
+          <span>Quick Access:</span>
+          <Link to="/assessment" className="text-indigo-600 font-semibold hover:underline">
+            ⚡ Direct Quiz
+          </Link>
+          <span className="text-slate-300">•</span>
+          <Link to="/module3" className="text-indigo-600 font-semibold hover:underline">
+            ⚙️ Teacher Portal
+          </Link>
+        </div>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-slate-400 mt-6">
+          PARAKH Project · Ministry of Education Aligned · © 2026
         </p>
-      </form>
+      </div>
     </div>
   );
 }

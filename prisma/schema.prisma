@@ -13,448 +13,7 @@ datasource db {
 }
 
 // -------------------------------------------------------------------
-// MODULE 2 MODELS
-// -------------------------------------------------------------------
-
-/// Represents a single adaptive assessment session taken by a student.
-/// Connects to Module 1 User table via `studentId`.
-model AdaptiveAssessment {
-  id                 String               @id @default(uuid())
-  studentId          Int                  // Foreign key to Module 1 User.id
-  subject            String               @default("Mathematics")
-  status             AssessmentStatus     @default(IN_PROGRESS)
-  currentDifficulty  Int                  @default(2) // 1=Easy, 2=Medium, 3=Hard
-  totalQuestions     Int                  @default(10)
-  answeredCount      Int                  @default(0)
-  score              Int                  @default(0)
-  accuracy           Float                @default(0.0)
-  startedAt          DateTime             @default(now())
-  completedAt        DateTime?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-
-  // Add Pre‑assessment attempt model
-model PreAssessmentAttempt {
-  id               String   @id @default(uuid())
-  studentId        Int
-  startedAt        DateTime @default(now())
-  completedAt      DateTime?
-  status           AssessmentStatus @default(IN_PROGRESS)
-  totalQuestions   Int
-  correctAnswers   Int @default(0)
-  topicProficiency Json? // will be filled on finish
-
-  student          Student @relation(fields: [studentId], references: [id])
-  // For simplicity we store only question IDs as JSON
-  questionIds      Json    // ["q1","q2",...]
-}
-
-// Store each answer for a pre‑assessment attempt
-model PreAssessmentResponse {
-  id                String   @id @default(uuid())
-  attemptId         String
-  questionId        String
-  selectedOption    String?   // "A"‑"D"
-  responseTimeSec   Float
-  answeredAt        DateTime @default(now())
-
-  attempt           PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-}
-
-
-/// Baseline result generated after the pre‑assessment.
-model BaselineResult {
-  id                Int      @id @default(autoincrement())
-  studentId         Int      @unique
-  overallAccuracy   Float    // percentage (0‑100)
-  totalQuestions    Int
-  correctAnswers    Int
-  topicProficiency  Json     // e.g. { "DBMS": 0.8, "DSA": 0.6 }
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relation
-  student           Student  @relation(fields: [studentId], references: [id])
-}
-
-  questions          AssessmentQuestion[]
-  responses          StudentResponse[]
-  topicProficiencies TopicProficiency[]
-  difficultyHistory  DifficultyHistory[]
-
-  @@index([studentId])
-  @@index([status])
-  @@index([createdAt])
-  @@map("adaptive_assessments")
-}
-
-/// Represents an instance of a question selected and presented in an assessment.
-/// Connects to Module 3 Question table via `questionId`.
-model AssessmentQuestion {
-  id               String              @id @default(uuid())
-  assessmentId     String
-  assessment       AdaptiveAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  questionId       String              // Foreign key to Module 3 QuestionBank.id
-  orderIndex       Int                 // 1-based order in which the question was delivered
-  topic            String
-  competency       String
-  difficulty       Int                 // 1, 2, 3
-  questionText     String
-  optionsJson      Json                // [{ id: "A", text: "..." }, ...]
-  correctOption    String              // "A", "B", "C", "D" (server-side only)
-  explanation      String?
-  allocatedSeconds Int                 @default(90)
-  presentedAt      DateTime            @default(now())
-
-  // Add Pre‑assessment attempt model
-model PreAssessmentAttempt {
-  id               String   @id @default(uuid())
-  studentId        Int
-  startedAt        DateTime @default(now())
-  completedAt      DateTime?
-  status           AssessmentStatus @default(IN_PROGRESS)
-  totalQuestions   Int
-  correctAnswers   Int @default(0)
-  topicProficiency Json? // will be filled on finish
-
-  student          Student @relation(fields: [studentId], references: [id])
-  // For simplicity we store only question IDs as JSON
-  questionIds      Json    // ["q1","q2",...]
-}
-
-// Store each answer for a pre‑assessment attempt
-model PreAssessmentResponse {
-  id                String   @id @default(uuid())
-  attemptId         String
-  questionId        String
-  selectedOption    String?   // "A"‑"D"
-  responseTimeSec   Float
-  answeredAt        DateTime @default(now())
-
-  attempt           PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-}
-
-
-/// Baseline result generated after the pre‑assessment.
-model BaselineResult {
-  id                Int      @id @default(autoincrement())
-  studentId         Int      @unique
-  overallAccuracy   Float    // percentage (0‑100)
-  totalQuestions    Int
-  correctAnswers    Int
-  topicProficiency  Json     // e.g. { "DBMS": 0.8, "DSA": 0.6 }
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relation
-  student           Student  @relation(fields: [studentId], references: [id])
-}
-
-  response         StudentResponse?
-
-  @@index([assessmentId])
-  @@index([questionId])
-  @@index([topic, difficulty])
-  @@map("assessment_questions")
-}
-
-/// Tracks the student's submitted answer, response-time, correctness, and timeout status.
-model StudentResponse {
-  id                   String              @id @default(uuid())
-  assessmentId         String
-  assessment           AdaptiveAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  questionId           String              // Foreign key to Module 3 QuestionBank.id
-  assessmentQuestionId String              @unique
-  assessmentQuestion   AssessmentQuestion  @relation(fields: [assessmentQuestionId], references: [id], onDelete: Cascade)
-  selectedOption       String?             // "A", "B", "C", "D" or null if timed out
-  isCorrect            Boolean             @default(false)
-  isTimedOut           Boolean             @default(false)
-  startedAt            DateTime
-  submittedAt          DateTime
-  responseTimeMs       Int                 // Response time in milliseconds
-  responseTimeSec      Float               // Response time in seconds
-  difficulty           Int                 // Difficulty at time of answering (1, 2, 3)
-  topic                String
-  createdAt            DateTime            @default(now())
-
-  @@index([assessmentId])
-  @@index([assessmentId, topic])
-  @@index([questionId])
-  @@map("student_responses")
-}
-
-/// Tracks ongoing proficiency and difficulty states per topic within an assessment session.
-/// Seeded initially from Module 1 Baseline Input.
-model TopicProficiency {
-  id                 String              @id @default(uuid())
-  assessmentId       String
-  assessment         AdaptiveAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  studentId          Int
-  topic              String
-  initialScore       Float               @default(50.0) // 0-100 baseline from Module 1
-  currentProficiency Float               @default(50.0) // Evolving proficiency score
-  questionsAttempted Int                 @default(0)
-  questionsCorrect   Int                 @default(0)
-  currentDifficulty  Int                 @default(2) // 1=Easy, 2=Medium, 3=Hard
-  consecutiveCorrect Int                 @default(0) // Tracks runs of consecutive correct answers
-  recentOutcomes     String              @default("[]") // JSON string of recent booleans for sliding window
-  updatedAt          DateTime            @updatedAt
-
-  @@unique([assessmentId, topic])
-  @@index([studentId, topic])
-  @@map("topic_proficiencies")
-}
-
-/// Auditable history of every difficulty adjustment decision made by the adaptive engine.
-model DifficultyHistory {
-  id                 String              @id @default(uuid())
-  assessmentId       String
-  assessment         AdaptiveAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  topic              String
-  questionOrder      Int                 // Which question number triggered this decision
-  previousDifficulty Int                 // Difficulty before transition
-  newDifficulty      Int                 // Difficulty after transition
-  reason             String              // e.g., "3_CONSECUTIVE_CORRECT", "2_INCORRECT_IN_LAST_3", "MAINTAINED"
-  details            String?             // Human-readable narrative explanation
-  createdAt          DateTime            @default(now())
-
-  @@index([assessmentId])
-  @@index([assessmentId, topic])
-  @@map("difficulty_history")
-}
-
-// -------------------------------------------------------------------
-// MODULE 3 MODELS
-// -------------------------------------------------------------------
-
-/// Represents a question in the Question Bank managed by Module 3.
-model Question {
-  id              String                @id @default(uuid())
-  subject         String
-  topic           String
-  competency      String                @default("")
-  difficulty      Int                   // 1=Easy, 2=Medium, 3=Hard
-  questionText    String                @db.Text
-  correctOption   String                // "A", "B", "C", "D"
-  explanation     String                @db.Text
-  status          QuestionStatus        @default(PENDING)
-  createdBy       String?               // teacher/admin identifier (from Module 1)
-  reviewedBy      String?
-  reviewedAt      DateTime?
-  rejectionReason String?
-  source          String                @default("MANUAL") // "MANUAL" or "AI"
-  aiGenerationId  String?               // FK to AIGenerationLog
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-
-  // Add Pre‑assessment attempt model
-model PreAssessmentAttempt {
-  id               String   @id @default(uuid())
-  studentId        Int
-  startedAt        DateTime @default(now())
-  completedAt      DateTime?
-  status           AssessmentStatus @default(IN_PROGRESS)
-  totalQuestions   Int
-  correctAnswers   Int @default(0)
-  topicProficiency Json? // will be filled on finish
-
-  student          Student @relation(fields: [studentId], references: [id])
-  // For simplicity we store only question IDs as JSON
-  questionIds      Json    // ["q1","q2",...]
-}
-
-// Store each answer for a pre‑assessment attempt
-model PreAssessmentResponse {
-  id                String   @id @default(uuid())
-  attemptId         String
-  questionId        String
-  selectedOption    String?   // "A"‑"D"
-  responseTimeSec   Float
-  answeredAt        DateTime @default(now())
-
-  attempt           PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-}
-
-
-/// Baseline result generated after the pre‑assessment.
-model BaselineResult {
-  id                Int      @id @default(autoincrement())
-  studentId         Int      @unique
-  overallAccuracy   Float    // percentage (0‑100)
-  totalQuestions    Int
-  correctAnswers    Int
-  topicProficiency  Json     // e.g. { "DBMS": 0.8, "DSA": 0.6 }
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relation
-  student           Student  @relation(fields: [studentId], references: [id])
-}
-
-  options         QuestionOption[]
-  reviewHistory   QuestionReviewHistory[]
-  aiGeneration    AIGenerationLog?      @relation(fields: [aiGenerationId], references: [id])
-
-  @@index([subject, topic, difficulty])
-  @@index([status])
-  @@index([createdAt])
-  @@map("questions")
-}
-
-/// Represents one of the four answer options (A/B/C/D) for a question.
-model QuestionOption {
-  id           String   @id @default(uuid())
-  questionId   String
-  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  optionLabel  String   // "A", "B", "C", "D"
-  optionText   String   @db.Text
-  isCorrect    Boolean  @default(false)
-
-  @@index([questionId])
-  @@map("question_options")
-}
-
-/// Audit log for every AI question generation batch.
-model AIGenerationLog {
-  id              String     @id @default(uuid())
-  provider        String     // "mock" or "openai"
-  subject         String
-  topic           String
-  difficulty      Int
-  requestedCount  Int
-  generatedCount  Int        @default(0)
-  validCount      Int        @default(0)
-  status          String     @default("PENDING") // "PENDING", "COMPLETED", "FAILED"
-  errorMessage    String?
-  createdAt       DateTime   @default(now())
-
-  // Add Pre‑assessment attempt model
-model PreAssessmentAttempt {
-  id               String   @id @default(uuid())
-  studentId        Int
-  startedAt        DateTime @default(now())
-  completedAt      DateTime?
-  status           AssessmentStatus @default(IN_PROGRESS)
-  totalQuestions   Int
-  correctAnswers   Int @default(0)
-  topicProficiency Json? // will be filled on finish
-
-  student          Student @relation(fields: [studentId], references: [id])
-  // For simplicity we store only question IDs as JSON
-  questionIds      Json    // ["q1","q2",...]
-}
-
-// Store each answer for a pre‑assessment attempt
-model PreAssessmentResponse {
-  id                String   @id @default(uuid())
-  attemptId         String
-  questionId        String
-  selectedOption    String?   // "A"‑"D"
-  responseTimeSec   Float
-  answeredAt        DateTime @default(now())
-
-  attempt           PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-}
-
-
-/// Baseline result generated after the pre‑assessment.
-model BaselineResult {
-  id                Int      @id @default(autoincrement())
-  studentId         Int      @unique
-  overallAccuracy   Float    // percentage (0‑100)
-  totalQuestions    Int
-  correctAnswers    Int
-  topicProficiency  Json     // e.g. { "DBMS": 0.8, "DSA": 0.6 }
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relation
-  student           Student  @relation(fields: [studentId], references: [id])
-}
-
-  questions       Question[]
-
-  @@index([createdAt])
-  @@map("ai_generation_logs")
-}
-
-/// Audit trail for every status change on a question (approve/reject/etc.).
-model QuestionReviewHistory {
-  id               String         @id @default(uuid())
-  questionId       String
-  question         Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  reviewerId       String?
-  previousStatus   QuestionStatus
-  newStatus        QuestionStatus
-  rejectionReason  String?
-  reviewedAt       DateTime       @default(now())
-
-  @@index([questionId])
-  @@map("question_review_history")
-}
-
-// -------------------------------------------------------------------
-// ENUMS & INTEGRATION TYPES
-
-/// Represents a student (module 1 user) in the system.
-model Student {
-  id           Int      @id @default(autoincrement())
-  fullName     String
-  email        String   @unique
-  hashedPassword String
-  college      String?
-  branch       String?
-  yearOfStudy  Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Add Pre‑assessment attempt model
-model PreAssessmentAttempt {
-  id               String   @id @default(uuid())
-  studentId        Int
-  startedAt        DateTime @default(now())
-  completedAt      DateTime?
-  status           AssessmentStatus @default(IN_PROGRESS)
-  totalQuestions   Int
-  correctAnswers   Int @default(0)
-  topicProficiency Json? // will be filled on finish
-
-  student          Student @relation(fields: [studentId], references: [id])
-  // For simplicity we store only question IDs as JSON
-  questionIds      Json    // ["q1","q2",...]
-}
-
-// Store each answer for a pre‑assessment attempt
-model PreAssessmentResponse {
-  id                String   @id @default(uuid())
-  attemptId         String
-  questionId        String
-  selectedOption    String?   // "A"‑"D"
-  responseTimeSec   Float
-  answeredAt        DateTime @default(now())
-
-  attempt           PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-}
-
-
-/// Baseline result generated after the pre‑assessment.
-model BaselineResult {
-  id                Int      @id @default(autoincrement())
-  studentId         Int      @unique
-  overallAccuracy   Float    // percentage (0‑100)
-  totalQuestions    Int
-  correctAnswers    Int
-  topicProficiency  Json     // e.g. { "DBMS": 0.8, "DSA": 0.6 }
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relation
-  student           Student  @relation(fields: [studentId], references: [id])
-}
-
-  adaptiveAssessments AdaptiveAssessment[] // assessments taken by this student
-}
-
+// ENUMS
 // -------------------------------------------------------------------
 
 enum QuestionStatus {
@@ -470,3 +29,230 @@ enum AssessmentStatus {
   ABANDONED
   TIMED_OUT
 }
+
+// -------------------------------------------------------------------
+// MODULE 1 MODELS (Student related)
+// -------------------------------------------------------------------
+
+model Student {
+  id                    Int                 @id @default(autoincrement())
+  fullName              String
+  email                 String              @unique
+  hashedPassword        String
+  college               String?
+  branch                String?
+  yearOfStudy           Int?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  // Relations
+  adaptiveAssessments   AdaptiveAssessment[]
+  preAssessmentAttempts PreAssessmentAttempt[]
+  baselineResult        BaselineResult?
+}
+
+model BaselineResult {
+  id                Int      @id @default(autoincrement())
+  studentId         Int      @unique
+  student           Student  @relation(fields: [studentId], references: [id])
+  overallAccuracy   Float    // 0‑100
+  totalQuestions    Int
+  correctAnswers    Int
+  topicProficiency  Json     // e.g. {"DBMS":0.8,"DSA":0.6}
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// -------------------------------------------------------------------
+// MODULE 2 MODELS (Adaptive Assessment)
+// -------------------------------------------------------------------
+
+model AdaptiveAssessment {
+  id                 String               @id @default(uuid())
+  studentId          Int
+  student            Student @relation(fields: [studentId], references: [id])
+  subject            String               @default("Mathematics")
+  status             AssessmentStatus     @default(IN_PROGRESS)
+  currentDifficulty  Int                  @default(2) // 1=Easy, 2=Medium, 3=Hard
+  totalQuestions     Int                  @default(10)
+  answeredCount      Int                  @default(0)
+  score              Int                  @default(0)
+  accuracy           Float                @default(0.0)
+  startedAt          DateTime             @default(now())
+  completedAt        DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  // Relations
+  assessmentQuestions AssessmentQuestion[]
+  studentResponses   StudentResponse[]
+  topicProficiencies TopicProficiency[]
+  difficultyHistory  DifficultyHistory[]
+}
+
+model AssessmentQuestion {
+  id               String              @id @default(uuid())
+  assessmentId     String
+  assessment       AdaptiveAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  questionId       String              // FK to Module 3 Question.id
+  orderIndex       Int                 // 1‑based order
+  topic            String
+  competency       String
+  difficulty       Int                 // 1,2,3
+  questionText     String
+  optionsJson      Json                // [{id:"A",text:"..."},...]
+  correctOption    String              // server‑side only
+  explanation      String?
+  allocatedSeconds Int                 @default(90)
+  presentedAt      DateTime            @default(now())
+
+  // Relation back to responses (optional, for completeness)
+  studentResponses StudentResponse[]
+}
+
+model StudentResponse {
+  id                      String              @id @default(uuid())
+  assessmentId            String
+  assessment              AdaptiveAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  questionId              String              // FK to Module 3 Question.id
+  assessmentQuestionId    String              @unique
+  assessmentQuestion      AssessmentQuestion  @relation(fields: [assessmentQuestionId], references: [id], onDelete: Cascade)
+  selectedOption          String?             // A‑D or null
+  isCorrect               Boolean             @default(false)
+  isTimedOut              Boolean             @default(false)
+  startedAt               DateTime
+  submittedAt             DateTime
+  responseTimeMs          Int                 // ms
+  responseTimeSec         Float               // seconds
+  difficulty              Int                 // 1‑3
+  topic                   String
+  createdAt               DateTime            @default(now())
+
+  @@index([assessmentId])
+  @@index([assessmentId, topic])
+  @@index([questionId])
+}
+
+model TopicProficiency {
+  id                 String   @id @default(uuid())
+  assessmentId       String
+  assessment         AdaptiveAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  studentId          Int
+  topic              String
+  initialScore       Float   @default(50.0) // baseline from Module 1
+  currentProficiency Float   @default(50.0)
+  questionsAttempted Int     @default(0)
+  questionsCorrect   Int     @default(0)
+  currentDifficulty  Int     @default(2)
+  consecutiveCorrect Int     @default(0)
+  recentOutcomes     String  @default("[]") // JSON array of booleans
+  updatedAt          DateTime @updatedAt
+
+  @@unique([assessmentId, topic])
+  @@index([studentId, topic])
+}
+
+model DifficultyHistory {
+  id                 String   @id @default(uuid())
+  assessmentId       String
+  assessment         AdaptiveAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  topic              String
+  questionOrder      Int      // which question triggered
+  previousDifficulty Int
+  newDifficulty      Int
+  reason             String   // e.g., "3_CONSECUTIVE_CORRECT"
+  details            String?
+  createdAt          DateTime @default(now())
+
+  @@index([assessmentId])
+  @@index([assessmentId, topic])
+}
+
+// -------------------------------------------------------------------
+// MODULE 1 PRE‑ASSESSMENT MODELS (used for initial assessment)
+// -------------------------------------------------------------------
+
+model PreAssessmentAttempt {
+  id               String   @id @default(uuid())
+  studentId        Int
+  student          Student @relation(fields: [studentId], references: [id])
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+  status           AssessmentStatus @default(IN_PROGRESS)
+  totalQuestions   Int
+  correctAnswers   Int @default(0)
+  topicProficiency Json?   // filled on finish
+  questionIds      Json    // ["q1","q2",...]
+
+  responses        PreAssessmentResponse[]
+}
+
+model PreAssessmentResponse {
+  id              String   @id @default(uuid())
+  attemptId       String
+  attempt         PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId      String
+  selectedOption  String?   // A‑D
+  responseTimeSec Float
+  answeredAt      DateTime @default(now())
+}
+
+// -------------------------------------------------------------------
+// MODULE 3 MODELS (Question Bank)
+// -------------------------------------------------------------------
+
+model Question {
+  id              String   @id @default(uuid())
+  subject         String
+  topic           String
+  competency      String   @default("")
+  difficulty      Int      // 1‑3
+  questionText    String   @db.Text
+  correctOption   String   // A‑D
+  explanation     String   @db.Text
+  status          QuestionStatus @default(PENDING)
+  createdBy       String?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  source          String   @default("MANUAL") // MANUAL or AI
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  options         QuestionOption[]
+  reviewHistory   QuestionReviewHistory[]
+
+  @@index([subject, topic, difficulty])
+  @@index([status])
+  @@index([createdAt])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id           String   @id @default(uuid())
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionLabel  String   // A‑D
+  optionText   String   @db.Text
+  isCorrect    Boolean  @default(false)
+
+  @@index([questionId])
+  @@map("question_options")
+}
+
+model QuestionReviewHistory {
+  id               String   @id @default(uuid())
+  questionId       String
+  question         Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  reviewerId       String?
+  previousStatus   QuestionStatus?
+  newStatus        QuestionStatus
+  comment          String?   @db.Text
+  createdAt        DateTime @default(now())
+
+  @@index([questionId])
+  @@index([reviewerId])
+}
+
+// End of schema

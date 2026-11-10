@@ -6,8 +6,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const adaptiveRoutes = require('./modules/module2/routes/adaptiveRoutes');
+const studentRoutes = require('./modules/module1/routes/studentRoutes');
 const authRoutes = require('./modules/module1/routes/authRoutes');
+const adaptiveRoutes = require('./modules/module2/routes/adaptiveRoutes');
+
 
 
 const questionRoutes = require('./modules/module3/routes/questionRoutes');
