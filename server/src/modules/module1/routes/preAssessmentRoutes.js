@@ -1,7 +1,7 @@
 // routes/preAssessmentRoutes.js
 // -------------------------------------------------------------------
 // Pre-assessment initialization, question delivery, response tracking,
-// completion, and baseline result endpoints (Module 1).
+// completion, active assessment recovery, and baseline result endpoints (Module 1).
 // -------------------------------------------------------------------
 
 const express = require('express');
@@ -10,6 +10,8 @@ const {
   getPreAssessmentAttempt,
   recordAssessmentAnswer,
   getAssessmentResponses,
+  getActiveAssessment,
+  getAssessmentHistory,
   savePreAssessmentResponse,
   finishPreAssessment,
   getPreResult,
@@ -23,6 +25,12 @@ router.use(protect);
 
 // POST /api/assessment/pre – Initialize/resume pre-assessment attempt
 router.post('/pre', startPreAssessment);
+
+// GET /api/assessment/active – Check for ongoing assessment to resume
+router.get('/active', getActiveAssessment);
+
+// GET /api/assessment/history – Retrieve student's assessment history
+router.get('/history', getAssessmentHistory);
 
 // GET /api/assessment/pre/:attemptId – Fetch attempt questions and restore saved responses
 router.get('/pre/:attemptId', getPreAssessmentAttempt);

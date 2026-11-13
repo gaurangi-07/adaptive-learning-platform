@@ -37,6 +37,8 @@ import {
   getPreAssessmentAttempt,
   recordAssessmentAnswer,
   getAssessmentResponses,
+  getActiveAssessment,
+  getAssessmentHistory,
   finishPreAssessment,
   getPreResult,
   inMemoryAttempts,
@@ -444,6 +446,74 @@ describe('Module 1: Complete 17-Flow Integration Test Suite (Prompt 7)', () => {
 
       expect(fakeQRes.statusCode).toBe(400);
       expect(fakeQRes.body.error).toContain('does not belong');
+    });
+
+    it('detects active assessment and supports resume metadata with marked for review', async () => {
+      const student = { id: 950, email: 'student950@college.edu' };
+      
+      // Before starting: active check should be false
+      const preCheckRes = createMockResponse();
+      await getActiveAssessment({ student }, preCheckRes);
+      expect(preCheckRes.statusCode).toBe(200);
+      expect(preCheckRes.body.hasActiveAssessment).toBe(false);
+
+      // Start pre-assessment
+      const startRes = createMockResponse();
+      await startPreAssessment({ student, body: {} }, startRes);
+      const attemptId = startRes.body.attemptId;
+      expect(startRes.body.endTime).toBeDefined();
+
+      // Answer question 1 and mark for review
+      const q1Id = startRes.body.questions[0].id;
+      const ansRes = createMockResponse();
+      await recordAssessmentAnswer(
+        {
+          student,
+          body: {
+            assessmentId: attemptId,
+            questionId: q1Id,
+            selectedOption: 'B',
+            isMarkedForReview: true,
+            responseTimeSec: 15,
+          },
+        },
+        ansRes
+      );
+      expect(ansRes.body.data.selectedOption).toBe('B');
+      expect(ansRes.body.data.isMarkedForReview).toBe(true);
+
+      // Toggle review mark without changing selectedOption
+      const toggleRes = createMockResponse();
+      await recordAssessmentAnswer(
+        {
+          student,
+          body: {
+            assessmentId: attemptId,
+            questionId: q1Id,
+            isMarkedForReview: false,
+          },
+        },
+        toggleRes
+      );
+      expect(toggleRes.body.data.selectedOption).toBe('B'); // Preserved selected option
+      expect(toggleRes.body.data.isMarkedForReview).toBe(false);
+
+      // Check active assessment endpoint
+      const activeRes = createMockResponse();
+      await getActiveAssessment({ student }, activeRes);
+      expect(activeRes.statusCode).toBe(200);
+      expect(activeRes.body.hasActiveAssessment).toBe(true);
+      expect(activeRes.body.activeAssessment.id).toBe(attemptId);
+      expect(activeRes.body.activeAssessment.answeredCount).toBe(1);
+      expect(activeRes.body.activeAssessment.unansweredCount).toBe(9);
+      expect(activeRes.body.activeAssessment.endTime).toBeDefined();
+
+      // Check assessment history
+      const histRes = createMockResponse();
+      await getAssessmentHistory({ student }, histRes);
+      expect(histRes.statusCode).toBe(200);
+      expect(histRes.body.history.length).toBeGreaterThanOrEqual(1);
+      expect(histRes.body.history[0].id).toBe(attemptId);
     });
   });
 

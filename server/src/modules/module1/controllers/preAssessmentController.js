@@ -1,7 +1,8 @@
 // src/modules/module1/controllers/preAssessmentController.js
 // -------------------------------------------------------------------
 // Pre-assessment lifecycle: initialization, question delivery,
-// response tracking, attempt completion, and baseline calculation.
+// response tracking, attempt completion, active attempt recovery,
+// and baseline calculation.
 // -------------------------------------------------------------------
 
 const { v4: uuidv4 } = require('uuid');
@@ -86,6 +87,28 @@ function selectCuratedPreAssessmentQuestions(questionCount = 10) {
 }
 
 /**
+ * Helper: Find attempt across DB and in-memory store
+ */
+async function findAttempt(attemptId) {
+  let attempt = null;
+  try {
+    if (prisma) {
+      attempt = await prisma.preAssessmentAttempt.findUnique({
+        where: { id: attemptId },
+        include: { responses: true },
+      });
+    }
+  } catch {
+    // Ignore DB error and fallback to memory
+  }
+
+  if (!attempt) {
+    attempt = inMemoryAttempts.get(attemptId);
+  }
+  return attempt;
+}
+
+/**
  * POST /api/assessment/pre
  * Initialize a new pre-assessment attempt or restore an active one.
  * Never leaks correct answers or explanations.
@@ -104,6 +127,7 @@ async function startPreAssessment(req, res) {
         activeAttempt = await prisma.preAssessmentAttempt.findFirst({
           where: { studentId, status: 'IN_PROGRESS' },
           orderBy: { startedAt: 'desc' },
+          include: { responses: true },
         });
       }
     } catch {
@@ -139,6 +163,9 @@ async function startPreAssessment(req, res) {
           .filter(Boolean)
           .map(sanitizeQuestionForClient);
 
+        const remainingSeconds = Math.max(0, Math.floor((ASSESSMENT_DURATION_MS - elapsedMs) / 1000));
+        const endTime = new Date(new Date(activeAttempt.startedAt).getTime() + ASSESSMENT_DURATION_MS).toISOString();
+
         return res.status(200).json({
           success: true,
           message: 'Resuming active pre-assessment attempt',
@@ -146,6 +173,8 @@ async function startPreAssessment(req, res) {
           totalQuestions: activeAttempt.totalQuestions,
           durationMinutes: ASSESSMENT_DURATION_MINUTES,
           startedAt: activeAttempt.startedAt,
+          endTime,
+          remainingSeconds,
           topics: ['Algebra', 'Geometry', 'Arithmetic', 'Trigonometry', 'Statistics'],
           questions,
         });
@@ -210,6 +239,7 @@ async function startPreAssessment(req, res) {
 
     // 4. Return sanitized questions (strictly omitting correctOption and explanation)
     const sanitizedQuestions = rawQuestions.map(sanitizeQuestionForClient);
+    const endTime = new Date(now.getTime() + ASSESSMENT_DURATION_MS).toISOString();
 
     return res.status(201).json({
       success: true,
@@ -217,6 +247,8 @@ async function startPreAssessment(req, res) {
       totalQuestions: rawQuestions.length,
       durationMinutes: ASSESSMENT_DURATION_MINUTES,
       startedAt: attempt.startedAt,
+      endTime,
+      remainingSeconds: ASSESSMENT_DURATION_MINUTES * 60,
       topics: ['Algebra', 'Geometry', 'Arithmetic', 'Trigonometry', 'Statistics'],
       questions: sanitizedQuestions,
     });
@@ -282,6 +314,7 @@ async function getPreAssessmentAttempt(req, res) {
         savedResponses[r.questionId] = {
           selectedOption: r.selectedOption,
           responseTimeSec: r.responseTimeSec,
+          isMarkedForReview: Boolean(r.isMarkedForReview),
           answeredAt: r.answeredAt,
         };
       });
@@ -291,6 +324,7 @@ async function getPreAssessmentAttempt(req, res) {
         savedResponses[qId] = {
           selectedOption: r.selectedOption,
           responseTimeSec: r.responseTimeSec,
+          isMarkedForReview: Boolean(r.isMarkedForReview),
           answeredAt: r.answeredAt,
         };
       }
@@ -299,6 +333,7 @@ async function getPreAssessmentAttempt(req, res) {
     const elapsedMs = Date.now() - new Date(attempt.startedAt).getTime();
     const remainingSeconds = Math.max(0, Math.floor((ASSESSMENT_DURATION_MS - elapsedMs) / 1000));
     const isExpired = remainingSeconds <= 0;
+    const endTime = new Date(new Date(attempt.startedAt).getTime() + ASSESSMENT_DURATION_MS).toISOString();
 
     return res.json({
       success: true,
@@ -306,6 +341,7 @@ async function getPreAssessmentAttempt(req, res) {
         id: attempt.id,
         status: attempt.status,
         startedAt: attempt.startedAt,
+        endTime,
         durationMinutes: ASSESSMENT_DURATION_MINUTES,
         remainingSeconds,
         isExpired,
@@ -320,37 +356,208 @@ async function getPreAssessmentAttempt(req, res) {
 }
 
 /**
- * Helper: Find attempt across DB and in-memory store
+ * GET /api/assessment/active (Prompt: Auto-save & Resume Assessment)
+ * Check whether the authenticated student has an assessment currently in progress.
  */
-async function findAttempt(attemptId) {
-  let attempt = null;
+async function getActiveAssessment(req, res) {
+  const studentId = req.student.id;
   try {
-    if (prisma) {
-      attempt = await prisma.preAssessmentAttempt.findUnique({
-        where: { id: attemptId },
-        include: { responses: true },
+    let activeAttempt = null;
+    try {
+      if (prisma) {
+        activeAttempt = await prisma.preAssessmentAttempt.findFirst({
+          where: { studentId, status: 'IN_PROGRESS' },
+          orderBy: { startedAt: 'desc' },
+          include: { responses: true },
+        });
+      }
+    } catch {
+      // Fallback
+    }
+
+    if (!activeAttempt) {
+      for (const a of inMemoryAttempts.values()) {
+        if (a.studentId === studentId && a.status === 'IN_PROGRESS') {
+          activeAttempt = a;
+          break;
+        }
+      }
+    }
+
+    if (!activeAttempt) {
+      return res.status(200).json({
+        success: true,
+        hasActiveAssessment: false,
+        activeAssessment: null,
       });
     }
-  } catch {
-    // Ignore DB error and fallback to memory
-  }
 
-  if (!attempt) {
-    attempt = inMemoryAttempts.get(attemptId);
+    const now = Date.now();
+    const elapsedMs = now - new Date(activeAttempt.startedAt).getTime();
+
+    // Check if expired
+    if (elapsedMs >= ASSESSMENT_DURATION_MS + 30000) {
+      try {
+        if (prisma) {
+          await prisma.preAssessmentAttempt.update({
+            where: { id: activeAttempt.id },
+            data: { status: 'TIMED_OUT', completedAt: new Date(now) },
+          });
+        }
+      } catch {
+        activeAttempt.status = 'TIMED_OUT';
+        activeAttempt.completedAt = new Date(now);
+      }
+
+      return res.status(200).json({
+        success: true,
+        hasActiveAssessment: false,
+        activeAssessment: null,
+      });
+    }
+
+    // Parse question IDs
+    let qIds = [];
+    try {
+      qIds = typeof activeAttempt.questionIds === 'string'
+        ? JSON.parse(activeAttempt.questionIds)
+        : activeAttempt.questionIds;
+    } catch {
+      qIds = [];
+    }
+
+    // Retrieve response map
+    const responseMap = inMemoryResponses.get(activeAttempt.id) || new Map();
+    if (activeAttempt.responses && Array.isArray(activeAttempt.responses)) {
+      activeAttempt.responses.forEach((r) => {
+        responseMap.set(r.questionId, r);
+      });
+    }
+
+    let answeredCount = 0;
+    let markedForReviewCount = 0;
+    for (const qId of qIds) {
+      const resp = responseMap.get(qId);
+      if (resp && resp.selectedOption !== null && resp.selectedOption !== undefined && resp.selectedOption !== '') {
+        answeredCount += 1;
+      }
+      if (resp && resp.isMarkedForReview) {
+        markedForReviewCount += 1;
+      }
+    }
+
+    const totalQuestions = activeAttempt.totalQuestions || qIds.length || 10;
+    const unansweredCount = totalQuestions - answeredCount;
+    const remainingSeconds = Math.max(0, Math.floor((ASSESSMENT_DURATION_MS - elapsedMs) / 1000));
+    const endTime = new Date(new Date(activeAttempt.startedAt).getTime() + ASSESSMENT_DURATION_MS).toISOString();
+
+    return res.status(200).json({
+      success: true,
+      hasActiveAssessment: true,
+      activeAssessment: {
+        id: activeAttempt.id,
+        attemptId: activeAttempt.id,
+        name: 'PARAKH Diagnostic Pre-Assessment',
+        totalQuestions,
+        answeredCount,
+        unansweredCount,
+        markedForReviewCount,
+        remainingSeconds,
+        durationMinutes: ASSESSMENT_DURATION_MINUTES,
+        startedAt: activeAttempt.startedAt,
+        endTime,
+      },
+    });
+  } catch (err) {
+    console.error('[PreAssessment] getActiveAssessment error:', err);
+    return res.status(500).json({ success: false, error: 'Failed to retrieve active assessment' });
   }
-  return attempt;
 }
 
 /**
- * POST /api/assessment/answer (Prompt 5)
+ * GET /api/assessment/history
+ * Retrieve past pre-assessment attempts for the authenticated student.
+ */
+async function getAssessmentHistory(req, res) {
+  const studentId = req.student.id;
+  try {
+    const history = [];
+
+    // Pre-assessment attempts from DB
+    try {
+      if (prisma) {
+        const attempts = await prisma.preAssessmentAttempt.findMany({
+          where: { studentId },
+          orderBy: { startedAt: 'desc' },
+          include: { responses: true },
+        });
+
+        attempts.forEach((a) => {
+          let prof = null;
+          try {
+            prof = typeof a.topicProficiency === 'string' ? JSON.parse(a.topicProficiency) : a.topicProficiency;
+          } catch {}
+
+          history.push({
+            id: a.id,
+            type: 'Diagnostic Pre-Assessment',
+            subject: 'Engineering Mathematics & Core CS',
+            startedAt: a.startedAt,
+            completedAt: a.completedAt,
+            status: a.status,
+            totalQuestions: a.totalQuestions,
+            correctAnswers: a.correctAnswers,
+            score: a.correctAnswers,
+            accuracy: a.totalQuestions > 0 ? Number(((a.correctAnswers / a.totalQuestions) * 100).toFixed(1)) : 0,
+            topicProficiency: prof,
+          });
+        });
+      }
+    } catch {
+      // Fallback
+    }
+
+    // In-memory attempts fallback if empty
+    if (history.length === 0) {
+      for (const a of inMemoryAttempts.values()) {
+        if (a.studentId === studentId) {
+          history.push({
+            id: a.id,
+            type: 'Diagnostic Pre-Assessment',
+            subject: 'Engineering Mathematics & Core CS',
+            startedAt: a.startedAt,
+            completedAt: a.completedAt,
+            status: a.status,
+            totalQuestions: a.totalQuestions,
+            correctAnswers: a.correctAnswers || 0,
+            score: a.correctAnswers || 0,
+            accuracy: a.totalQuestions > 0 ? Number((((a.correctAnswers || 0) / a.totalQuestions) * 100).toFixed(1)) : 0,
+            topicProficiency: a.topicProficiency,
+          });
+        }
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      history,
+    });
+  } catch (err) {
+    console.error('[PreAssessment] getAssessmentHistory error:', err);
+    return res.status(500).json({ success: false, error: 'Failed to retrieve assessment history' });
+  }
+}
+
+/**
+ * POST /api/assessment/answer (Prompt 5 + Auto-save & Review Mark)
  * Save or update a single question response in real time.
  * Validates student, verifies question belongs to assessment, prevents duplicates,
- * tracks time spent, and handles unanswered/null responses.
+ * tracks time spent, and supports marking questions for review.
  */
 async function recordAssessmentAnswer(req, res) {
   const studentId = req.student.id;
   const assessmentId = req.body.assessmentId || req.body.attemptId || req.params.attemptId;
-  const { questionId, selectedOption, responseTimeSec = 0 } = req.body;
+  const { questionId, selectedOption, responseTimeSec = 0, isMarkedForReview } = req.body;
 
   if (!assessmentId) {
     return res.status(400).json({ success: false, error: 'assessmentId is required' });
@@ -403,40 +610,53 @@ async function recordAssessmentAnswer(req, res) {
       });
     }
 
-    // 3. Normalize option: null/undefined/empty string represents unanswered
-    const normalizedOption = (selectedOption !== undefined && selectedOption !== null && selectedOption !== '')
-      ? String(selectedOption).toUpperCase()
-      : null;
-    const timeTaken = Math.max(0, Number(responseTimeSec) || 0);
+    // Get previous answer from memory to preserve option or review state if not passed
+    const prevMemoryResp = inMemoryResponses.get(assessmentId)?.get(questionId);
+
+    // 3. Normalize option: null/empty represents unselected
+    let normalizedOption = prevMemoryResp ? prevMemoryResp.selectedOption : null;
+    if (selectedOption !== undefined) {
+      normalizedOption = (selectedOption !== null && selectedOption !== '')
+        ? String(selectedOption).toUpperCase()
+        : null;
+    }
+
+    // Normalize review mark
+    let marked = prevMemoryResp ? prevMemoryResp.isMarkedForReview : false;
+    if (isMarkedForReview !== undefined) {
+      marked = Boolean(isMarkedForReview);
+    }
+
+    const timeTaken = Math.max(0, Number(responseTimeSec) || (prevMemoryResp?.responseTimeSec || 0));
     const answeredAt = new Date();
 
     // 4. Save/update response in database (prevents duplicate response records)
-    let savedDbRecord = null;
     try {
       if (prisma) {
-        // Upsert by unique attemptId_questionId or find first
         const existingResp = await prisma.preAssessmentResponse.findFirst({
           where: { attemptId: assessmentId, questionId },
         });
 
         if (existingResp) {
-          savedDbRecord = await prisma.preAssessmentResponse.update({
+          await prisma.preAssessmentResponse.update({
             where: { id: existingResp.id },
             data: {
               studentId,
               selectedOption: normalizedOption,
               responseTimeSec: timeTaken,
+              isMarkedForReview: marked,
               answeredAt,
             },
           });
         } else {
-          savedDbRecord = await prisma.preAssessmentResponse.create({
+          await prisma.preAssessmentResponse.create({
             data: {
               attemptId: assessmentId,
               studentId,
               questionId,
               selectedOption: normalizedOption,
               responseTimeSec: timeTaken,
+              isMarkedForReview: marked,
               answeredAt,
             },
           });
@@ -457,6 +677,7 @@ async function recordAssessmentAnswer(req, res) {
       questionId,
       selectedOption: normalizedOption,
       responseTimeSec: timeTaken,
+      isMarkedForReview: marked,
       answeredAt,
     };
     inMemoryResponses.get(assessmentId).set(questionId, responseRecord);
@@ -471,6 +692,7 @@ async function recordAssessmentAnswer(req, res) {
         selectedOption: normalizedOption,
         responseTimeSec: timeTaken,
         isAnswered: normalizedOption !== null,
+        isMarkedForReview: marked,
         answeredAt,
       },
     });
@@ -540,6 +762,7 @@ async function getAssessmentResponses(req, res) {
             questionId: r.questionId,
             selectedOption: r.selectedOption,
             responseTimeSec: r.responseTimeSec,
+            isMarkedForReview: Boolean(r.isMarkedForReview),
             answeredAt: r.answeredAt,
           });
         });
@@ -555,6 +778,7 @@ async function getAssessmentResponses(req, res) {
         questionId: qId,
         selectedOption: resp ? resp.selectedOption : null,
         responseTimeSec: resp ? resp.responseTimeSec : 0,
+        isMarkedForReview: Boolean(resp && resp.isMarkedForReview),
         answeredAt: resp ? resp.answeredAt : null,
         isAnswered: Boolean(resp && resp.selectedOption !== null),
       };
@@ -563,6 +787,7 @@ async function getAssessmentResponses(req, res) {
     const totalQuestions = qIds.length;
     const answeredCount = responses.filter((r) => r.isAnswered).length;
     const unansweredCount = totalQuestions - answeredCount;
+    const markedForReviewCount = responses.filter((r) => r.isMarkedForReview).length;
 
     return res.status(200).json({
       success: true,
@@ -571,6 +796,7 @@ async function getAssessmentResponses(req, res) {
       totalQuestions,
       answeredCount,
       unansweredCount,
+      markedForReviewCount,
       responses,
     });
   } catch (err) {
@@ -921,6 +1147,8 @@ module.exports = {
   getPreAssessmentAttempt,
   recordAssessmentAnswer,
   getAssessmentResponses,
+  getActiveAssessment,
+  getAssessmentHistory,
   savePreAssessmentResponse,
   finishPreAssessment,
   getPreResult,

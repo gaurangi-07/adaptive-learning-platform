@@ -1,5 +1,6 @@
 // src/modules/module1/api/assessmentApi.js
-// Client API service for pre-assessment initialization, questions, response tracking, and baseline calculation.
+// Client API service for pre-assessment initialization, questions, response tracking,
+// active session resumption, and baseline calculation.
 
 import axios from 'axios';
 
@@ -32,13 +33,44 @@ export async function getPreAssessmentAttempt(attemptId) {
 }
 
 /**
- * Prompt 5: Record an individual question answer in real time.
+ * Check if the student currently has an active assessment in progress.
+ * GET /api/assessment/active
+ */
+export async function fetchActiveAssessment() {
+  const response = await axios.get(
+    '/api/assessment/active',
+    { headers: authHeader() }
+  );
+  return response.data;
+}
+
+/**
+ * Retrieve past assessment history.
+ * GET /api/assessment/history
+ */
+export async function fetchAssessmentHistory() {
+  const response = await axios.get(
+    '/api/assessment/history',
+    { headers: authHeader() }
+  );
+  return response.data;
+}
+
+/**
+ * Prompt 5 & Auto-save: Record an individual question answer in real time.
+ * Supports saving selectedOption, responseTimeSec, and isMarkedForReview.
  * POST /api/assessment/answer
  */
-export async function recordAssessmentAnswer({ assessmentId, questionId, selectedOption, responseTimeSec = 0 }) {
+export async function recordAssessmentAnswer({
+  assessmentId,
+  questionId,
+  selectedOption,
+  responseTimeSec = 0,
+  isMarkedForReview,
+}) {
   const response = await axios.post(
     '/api/assessment/answer',
-    { assessmentId, questionId, selectedOption, responseTimeSec },
+    { assessmentId, questionId, selectedOption, responseTimeSec, isMarkedForReview },
     { headers: authHeader() }
   );
   return response.data;
@@ -59,12 +91,18 @@ export async function getAssessmentResponses(assessmentId) {
 /**
  * Backward-compatible alias for saving response.
  */
-export async function savePreAssessmentResponse(attemptId, { questionId, selectedOption, responseTimeSec = 0 }) {
+export async function savePreAssessmentResponse(attemptId, {
+  questionId,
+  selectedOption,
+  responseTimeSec = 0,
+  isMarkedForReview,
+}) {
   return recordAssessmentAnswer({
     assessmentId: attemptId,
     questionId,
     selectedOption,
     responseTimeSec,
+    isMarkedForReview,
   });
 }
 
