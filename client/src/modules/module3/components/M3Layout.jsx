@@ -50,13 +50,19 @@ export default function M3Layout({ children, title, subtitle }) {
           ))}
         </nav>
 
-        {/* Footer link back to M2 */}
-        <div className="p-4 border-t border-slate-100">
+        {/* Footer links */}
+        <div className="p-4 border-t border-slate-100 space-y-1">
           <NavLink
-            to="/"
+            to="/assessment"
             className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-slate-500 hover:bg-slate-100 transition-all font-medium"
           >
-            <span>⟵</span> Back to Assessment
+            <span>⚡</span> Adaptive Assessment
+          </NavLink>
+          <NavLink
+            to="/module1/dashboard"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-slate-500 hover:bg-slate-100 transition-all font-medium"
+          >
+            <span>⟵</span> Student Dashboard
           </NavLink>
         </div>
       </aside>

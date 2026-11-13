@@ -26,10 +26,21 @@ const MOCK_STUDENTS = [
   { id: 42, name: 'Rohan Verma (ID #42)' }
 ];
 
+// Helper: get currently logged-in student ID from Module 1 auth
+function getLoggedInStudentId() {
+  try {
+    const raw = localStorage.getItem('studentUser');
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed?.id ?? 12;
+  } catch {
+    return 12;
+  }
+}
+
 const PIE_COLORS = ['#10b981', '#f43f5e']; // Emerald (correct), Rose (incorrect)
 
 export default function StudentAnalyticsPage() {
-  const [selectedStudentId, setSelectedStudentId] = useState(12);
+  const [selectedStudentId, setSelectedStudentId] = useState(() => getLoggedInStudentId());
   const [subjectFilter, setSubjectFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

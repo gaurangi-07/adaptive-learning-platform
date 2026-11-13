@@ -13,7 +13,9 @@ const service = new AdaptiveService();
  */
 async function startAssessment(req, res, next) {
   try {
-    const result = await service.startAssessment(req.validatedBody);
+    // Always use the authenticated student's ID from JWT, ignoring any body studentId
+    const studentId = parseInt(req.student.id, 10);
+    const result = await service.startAssessment({ ...req.validatedBody, studentId });
     res.status(201).json({ success: true, data: result });
   } catch (err) {
     next(err);

@@ -40,8 +40,8 @@ export default function AssessmentCompletePage() {
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="max-w-md w-full space-y-4">
           <ErrorAlert message={error} onRetry={() => { setError(null); setLoading(true); }} />
-          <button type="button" onClick={() => navigate('/')} className="btn-secondary w-full">
-            ← New Assessment
+          <button type="button" onClick={() => navigate('/module1/dashboard')} className="btn-secondary w-full">
+            ← Dashboard
           </button>
         </div>
       </div>
@@ -224,20 +224,27 @@ export default function AssessmentCompletePage() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/module1/dashboard')}
             className="btn-secondary flex-1"
           >
-            ← New Assessment
+            ← Dashboard
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(`/report/${attemptId}`)}
+            className="btn-primary flex-1"
+          >
+            📊 Unified Report
           </button>
           <button
             type="button"
             onClick={() => navigate(`/history/${attemptId}`)}
-            className="btn-primary flex-1"
+            className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-all"
           >
-            View Full History
+            View History
           </button>
         </div>
       </div>

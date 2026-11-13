@@ -1,10 +1,14 @@
 /**
  * @file App.jsx
  * @description Root routing component for the PARAKH Adaptive Learning Platform.
- * Sets the Student Login page as the initial landing page (/).
+ * All three modules are connected through a unified router.
+ * Protected routes require Module 1 JWT authentication.
  */
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Module 1 — Student Auth & Pre-assessment
 import Login from './modules/module1/pages/Login';
 import Signup from './modules/module1/pages/Signup';
 import Profile from './modules/module1/pages/Profile';
@@ -18,6 +22,9 @@ import AdaptiveQuizPage from './modules/module2/pages/AdaptiveQuizPage';
 import AssessmentCompletePage from './modules/module2/pages/AssessmentCompletePage';
 import HistoryPage from './modules/module2/pages/HistoryPage';
 
+// Unified Report
+import UnifiedReportPage from './pages/UnifiedReportPage';
+
 // Module 3 — AI Question Bank & Student Analytics
 import M3DashboardPage from './modules/module3/pages/M3DashboardPage';
 import AIQuestionGeneratorPage from './modules/module3/pages/AIQuestionGeneratorPage';
@@ -30,37 +37,39 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* FIRST PAGE: Student Login as the website entry point */}
+        {/* ── Public routes (no login required) ── */}
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-
-        {/* Module 1 – Student Management & Diagnostic Assessment */}
         <Route path="/module1/login" element={<Login />} />
         <Route path="/module1/signup" element={<Signup />} />
-        <Route path="/module1/profile" element={<Profile />} />
-        <Route path="/module1/dashboard" element={<Dashboard />} />
-        <Route path="/module1/pre-assessment" element={<PreAssessmentIntro />} />
-        <Route path="/module1/pre-assessment/:attemptId" element={<PreAssessmentMCQ />} />
-        <Route path="/pre-assessment" element={<PreAssessmentIntro />} />
-        <Route path="/pre-assessment/:attemptId" element={<PreAssessmentMCQ />} />
-        <Route path="/module1" element={<Navigate to="/" replace />} />
 
-        {/* Module 2 — Computer Adaptive Testing Engine */}
-        <Route path="/assessment" element={<StartAssessmentPage />} />
-        <Route path="/quiz/:attemptId" element={<AdaptiveQuizPage />} />
-        <Route path="/results/:attemptId" element={<AssessmentCompletePage />} />
-        <Route path="/history/:attemptId" element={<HistoryPage />} />
+        {/* ── Module 1: Student pages (protected) ── */}
+        <Route path="/module1/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/module1/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/module1/pre-assessment" element={<ProtectedRoute><PreAssessmentIntro /></ProtectedRoute>} />
+        <Route path="/module1/pre-assessment/:attemptId" element={<ProtectedRoute><PreAssessmentMCQ /></ProtectedRoute>} />
+        <Route path="/pre-assessment" element={<ProtectedRoute><PreAssessmentIntro /></ProtectedRoute>} />
+        <Route path="/pre-assessment/:attemptId" element={<ProtectedRoute><PreAssessmentMCQ /></ProtectedRoute>} />
+        <Route path="/module1" element={<Navigate to="/module1/dashboard" replace />} />
 
-        {/* Module 3 — AI Question Bank & Student Analytics */}
-        <Route path="/module3" element={<M3DashboardPage />} />
-        <Route path="/module3/generate" element={<AIQuestionGeneratorPage />} />
-        <Route path="/module3/questions" element={<QuestionBankPage />} />
-        <Route path="/module3/pending" element={<PendingReviewsPage />} />
-        <Route path="/module3/analytics" element={<StudentAnalyticsPage />} />
-        <Route path="/module3/reports" element={<StudentPerformanceReportPage />} />
+        {/* ── Module 2: Adaptive Testing (protected) ── */}
+        <Route path="/assessment" element={<ProtectedRoute><StartAssessmentPage /></ProtectedRoute>} />
+        <Route path="/quiz/:attemptId" element={<ProtectedRoute><AdaptiveQuizPage /></ProtectedRoute>} />
+        <Route path="/results/:attemptId" element={<ProtectedRoute><AssessmentCompletePage /></ProtectedRoute>} />
+        <Route path="/history/:attemptId" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
+        <Route path="/report/:adaptiveAttemptId" element={<ProtectedRoute><UnifiedReportPage /></ProtectedRoute>} />
 
-        {/* Default catch-all redirects to the Login landing page */}
+        {/* ── Module 3: AI & Analytics (protected) ── */}
+        <Route path="/module3" element={<ProtectedRoute><M3DashboardPage /></ProtectedRoute>} />
+        <Route path="/module3/generate" element={<ProtectedRoute><AIQuestionGeneratorPage /></ProtectedRoute>} />
+        <Route path="/module3/questions" element={<ProtectedRoute><QuestionBankPage /></ProtectedRoute>} />
+        <Route path="/module3/pending" element={<ProtectedRoute><PendingReviewsPage /></ProtectedRoute>} />
+        <Route path="/module3/analytics" element={<ProtectedRoute><StudentAnalyticsPage /></ProtectedRoute>} />
+        <Route path="/module3/reports" element={<ProtectedRoute><StudentPerformanceReportPage /></ProtectedRoute>} />
+
+        {/* Catch-all → login */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

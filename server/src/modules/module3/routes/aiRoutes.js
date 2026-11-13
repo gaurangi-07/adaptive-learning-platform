@@ -11,12 +11,13 @@ const { generateQuestions } = require('../services/aiService');
 const { validateAIGenerateRequest } = require('../validators/questionValidator');
 const { QuestionService } = require('../services/questionService');
 const { getPrismaClient } = require('../../../prismaClient');
+const { protect } = require('../../module1/middleware/authMiddleware');
 
 const router = Router();
 const questionService = new QuestionService();
 
 // ─── POST /api/ai/generate ────────────────────────────────────────────────────
-router.post('/generate', async (req, res, next) => {
+router.post('/generate', protect, async (req, res, next) => {
   try {
     const validation = validateAIGenerateRequest(req.body);
     if (!validation.valid) {

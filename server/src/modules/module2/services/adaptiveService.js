@@ -34,12 +34,41 @@ class AdaptiveService {
   // START ASSESSMENT
   // ──────────────────────────────────────────────────────────
   async startAssessment({ studentId, subject = 'Mathematics', baselineLevel, topicScores, totalQuestions }) {
-    // Fetch baseline from Module 1 (mock or real)
+    // Fetch baseline: caller-provided > real DB BaselineResult > mock fallback
     let baseline;
     if (baselineLevel && topicScores && Object.keys(topicScores).length > 0) {
+      // Explicitly provided by caller — use as-is
       baseline = { studentId, subject, baselineLevel, topicScores };
     } else {
-      baseline = await MockStudentBaselineAdapter.getStudentBaseline(studentId);
+      // Try real BaselineResult from Module 1 database first
+      try {
+        const realBaseline = await this.prisma.baselineResult.findUnique({
+          where: { studentId }
+        });
+        if (realBaseline && realBaseline.topicProficiency) {
+          const proficiencyRaw = realBaseline.topicProficiency;
+          // BaselineResult stores 0-1 scale; adaptive expects 0-100
+          const convertedScores = {};
+          for (const [topic, score] of Object.entries(proficiencyRaw)) {
+            convertedScores[topic] = Math.round(Number(score) * 100);
+          }
+          const acc = realBaseline.overallAccuracy;
+          const computedLevel = acc >= 70 ? 3 : acc >= 40 ? 2 : 1;
+          baseline = {
+            studentId,
+            subject,
+            baselineLevel: computedLevel,
+            topicScores: convertedScores,
+            metadata: { assessedAt: realBaseline.createdAt?.toISOString() }
+          };
+        } else {
+          // No real baseline yet — fall back to mock (dev/testing)
+          baseline = await MockStudentBaselineAdapter.getStudentBaseline(studentId);
+        }
+      } catch {
+        // DB unavailable — fall back to mock
+        baseline = await MockStudentBaselineAdapter.getStudentBaseline(studentId);
+      }
     }
 
     const questionCount = totalQuestions || DEFAULT_QUESTION_COUNT;

@@ -22,14 +22,27 @@ const MOCK_STUDENTS = [
   { id: 42, name: 'Rohan Verma', grade: 'Grade 10', section: 'A' }
 ];
 
+// Helper: get currently logged-in student from Module 1 auth
+function getLoggedInStudent() {
+  try {
+    const raw = localStorage.getItem('studentUser');
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (parsed?.id) {
+      return { id: parsed.id, name: parsed.fullName || 'Student', grade: parsed.yearOfStudy ? `Year ${parsed.yearOfStudy}` : 'Student', section: parsed.branch || 'General' };
+    }
+  } catch {}
+  return null;
+}
+
 export default function StudentPerformanceReportPage() {
-  const [selectedStudentId, setSelectedStudentId] = useState(12);
+  const loggedInStudent = getLoggedInStudent();
+  const [selectedStudentId, setSelectedStudentId] = useState(() => loggedInStudent?.id ?? 12);
   const [report, setReport] = useState(null);
   const [assessments, setAssessments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const activeStudent = MOCK_STUDENTS.find((s) => s.id === selectedStudentId) || MOCK_STUDENTS[0];
+  const activeStudent = MOCK_STUDENTS.find((s) => s.id === selectedStudentId) || loggedInStudent || MOCK_STUDENTS[0];
 
   useEffect(() => {
     async function loadData() {

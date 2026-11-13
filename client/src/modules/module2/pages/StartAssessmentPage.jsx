@@ -1,45 +1,101 @@
 /**
  * @file StartAssessmentPage.jsx
- * @description Landing page to configure and start an adaptive assessment session.
- * Accepts student configuration, connects to Module 1 baseline, and launches the quiz.
+ * @description Launch page for the adaptive assessment session.
+ * Uses the authenticated student's identity and Module 1 baseline proficiency.
+ * Integrates Module 1 (auth + baseline) → Module 2 (adaptive engine).
  */
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AdaptiveService } from '../services/adaptiveService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorAlert from '../components/ErrorAlert';
-
-const MOCK_STUDENTS = [
-  { studentId: 12, name: 'Aarav Sharma', grade: 'Grade 10', baselineLevel: 2, description: 'Medium baseline (Algebra 70%, Geometry 40%)' },
-  { studentId: 25, name: 'Diya Patel', grade: 'Grade 10', baselineLevel: 1, description: 'Low baseline — needs easy questions' },
-  { studentId: 42, name: 'Rohan Verma', grade: 'Grade 10', baselineLevel: 3, description: 'High baseline — advanced learner' }
-];
 
 const QUESTION_COUNTS = [5, 10, 15, 20];
 
 export default function StartAssessmentPage() {
   const navigate = useNavigate();
-  const [selectedStudent, setSelectedStudent] = useState(MOCK_STUDENTS[0]);
+  const location = useLocation();
+
+  // Read authenticated student from Module 1 localStorage
+  const [student, setStudent] = useState(null);
+  const [baseline, setBaseline] = useState(null);
   const [questionCount, setQuestionCount] = useState(10);
   const [loading, setLoading] = useState(false);
+  const [initLoading, setInitLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    // Load authenticated student identity from Module 1
+    try {
+      const raw = localStorage.getItem('studentUser');
+      const parsed = raw ? JSON.parse(raw) : null;
+      setStudent(parsed);
+    } catch {
+      setStudent(null);
+    }
+
+    // Check if baseline was passed via navigation state (from Dashboard)
+    if (location.state?.baseline) {
+      setBaseline(location.state.baseline);
+    }
+
+    setInitLoading(false);
+  }, [location.state]);
+
   async function handleStart() {
+    if (!student) {
+      navigate('/login');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const res = await AdaptiveService.startAssessment({
-        studentId: selectedStudent.studentId,
-        subject: 'Mathematics',
+      const payload = {
         totalQuestions: questionCount
-      });
+        // studentId is extracted from JWT on backend — no need to send it
+        // baseline (baselineLevel + topicScores) is fetched from DB on backend
+      };
+
+      // If we have baseline from navigation state, pass it explicitly
+      if (baseline?.baselineLevel && baseline?.topicScores) {
+        payload.baselineLevel = baseline.baselineLevel;
+        payload.topicScores = baseline.topicScores;
+      }
+
+      const res = await AdaptiveService.startAssessment(payload);
       const { attemptId } = res.data;
       navigate(`/quiz/${attemptId}`);
     } catch (err) {
       setError(err.message || 'Failed to start assessment. Is the server running?');
       setLoading(false);
     }
+  }
+
+  if (initLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner message="Loading…" />
+      </div>
+    );
+  }
+
+  if (!student) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <p className="text-slate-600">Please log in to start an assessment.</p>
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="btn-primary"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -70,39 +126,34 @@ export default function StartAssessmentPage() {
 
         {/* Config card */}
         <div className="card shadow-xl border-slate-100 mb-6">
-          {/* Student selector */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-slate-700 mb-3">
-              👤 Select Student Profile
-              <span className="text-xs font-normal text-slate-400 ml-2">(Development Mode — Mock Students)</span>
-            </label>
-            <div className="space-y-2">
-              {MOCK_STUDENTS.map((s) => (
-                <label
-                  key={s.studentId}
-                  className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    selectedStudent.studentId === s.studentId
-                      ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-300'
-                      : 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
-                  }`}
+          {/* Student Identity (from Module 1 auth) */}
+          <div className="mb-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+            <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1">
+              👤 Authenticated Student
+            </p>
+            <p className="font-semibold text-slate-900 text-sm">
+              {student.fullName}
+              <span className="text-xs text-slate-400 font-normal ml-2">
+                ID #{student.id} · {student.college || 'College'} · {student.branch || 'Branch'}
+              </span>
+            </p>
+            {baseline && (
+              <p className="text-xs text-indigo-600 mt-1">
+                ✅ Baseline proficiency loaded from pre-assessment
+              </p>
+            )}
+            {!baseline && (
+              <p className="text-xs text-amber-600 mt-1">
+                ⚠️ No pre-assessment baseline found — adaptive engine will use default starting level.{' '}
+                <button
+                  type="button"
+                  onClick={() => navigate('/pre-assessment')}
+                  className="underline font-semibold"
                 >
-                  <input
-                    type="radio"
-                    name="student"
-                    value={s.studentId}
-                    checked={selectedStudent.studentId === s.studentId}
-                    onChange={() => setSelectedStudent(s)}
-                    className="mt-1 accent-indigo-600"
-                  />
-                  <div>
-                    <p className="font-semibold text-slate-800 text-sm">{s.name}
-                      <span className="text-xs text-slate-400 font-normal ml-2">ID #{s.studentId} · {s.grade}</span>
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">{s.description}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
+                  Take pre-assessment first →
+                </button>
+              </p>
+            )}
           </div>
 
           {/* Question count */}
@@ -149,22 +200,31 @@ export default function StartAssessmentPage() {
             </div>
           )}
 
-          {/* Start button */}
-          <button
-            type="button"
-            onClick={handleStart}
-            disabled={loading}
-            className="btn-primary w-full text-base py-4"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                Starting Assessment…
-              </span>
-            ) : (
-              <span>Start Adaptive Assessment →</span>
-            )}
-          </button>
+          {/* Action buttons */}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/module1/dashboard')}
+              className="btn-secondary flex-1"
+            >
+              ← Dashboard
+            </button>
+            <button
+              type="button"
+              onClick={handleStart}
+              disabled={loading}
+              className="btn-primary flex-1 text-base py-4"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Starting Assessment…
+                </span>
+              ) : (
+                <span>Start Adaptive Assessment →</span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Footer */}

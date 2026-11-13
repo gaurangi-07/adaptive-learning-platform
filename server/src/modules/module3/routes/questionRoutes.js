@@ -12,6 +12,8 @@ const { Router } = require('express');
 const { QuestionService } = require('../services/questionService');
 const { validateQuestionFilters } = require('../validators/questionValidator');
 
+const { protect } = require('../../module1/middleware/authMiddleware');
+
 const router = Router();
 const service = new QuestionService();
 
@@ -77,7 +79,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // ─── POST /api/questions ───────────────────────────────────────────────────────
-router.post('/', async (req, res, next) => {
+router.post('/', protect, async (req, res, next) => {
   try {
     const createdBy = req.headers['x-user-id'] || null; // Module 1 sets this header
     const question = await service.createQuestion(req.body, createdBy);
@@ -91,7 +93,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // ─── PUT /api/questions/:id ────────────────────────────────────────────────────
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', protect, async (req, res, next) => {
   try {
     const question = await service.updateQuestion(req.params.id, req.body);
     res.json({ success: true, data: { question } });
@@ -107,7 +109,7 @@ router.put('/:id', async (req, res, next) => {
 });
 
 // ─── DELETE /api/questions/:id ─────────────────────────────────────────────────
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', protect, async (req, res, next) => {
   try {
     const result = await service.deleteQuestion(req.params.id);
     res.json({ success: true, data: result });
@@ -120,7 +122,7 @@ router.delete('/:id', async (req, res, next) => {
 });
 
 // ─── PATCH /api/questions/:id/status ──────────────────────────────────────────
-router.patch('/:id/status', async (req, res, next) => {
+router.patch('/:id/status', protect, async (req, res, next) => {
   try {
     const reviewerId = req.headers['x-user-id'] || null;
     const question = await service.changeStatus(req.params.id, {

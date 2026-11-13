@@ -6,7 +6,7 @@
 const { z } = require('zod');
 
 const StartAssessmentSchema = z.object({
-  studentId: z.number({ required_error: "studentId is required" }).int().positive(),
+  studentId: z.number().int().positive().optional(),
   subject: z.string().min(1).default("Mathematics"),
   baselineLevel: z.number().int().min(1).max(3).optional(),
   topicScores: z.record(z.string(), z.number().min(0).max(100)).optional(),

@@ -18,31 +18,24 @@ const {
   SubmitAnswerSchema,
   AttemptIdParamSchema
 } = require('../validators/adaptiveValidators');
+const { protect } = require('../../module1/middleware/authMiddleware');
 
 const router = Router();
 
-// Health check (no validation needed)
+// Health check (no auth needed)
 router.get('/health', healthCheck);
 
-// Start a new adaptive assessment
-router.post('/start', validateBody(StartAssessmentSchema), startAssessment);
-
-// Get the next adaptively-selected question
-router.get('/:attemptId/next', validateParams(AttemptIdParamSchema), getNextQuestion);
-
-// Submit an answer to a question
+// All assessment routes require authentication
+router.post('/start', protect, validateBody(StartAssessmentSchema), startAssessment);
+router.get('/:attemptId/next', protect, validateParams(AttemptIdParamSchema), getNextQuestion);
 router.post(
   '/:attemptId/answer',
+  protect,
   validateParams(AttemptIdParamSchema),
   validateBody(SubmitAnswerSchema),
   submitAnswer
 );
-
-// Get response history for an assessment
-router.get('/:attemptId/history', validateParams(AttemptIdParamSchema), getHistory);
-
-// Get assessment summary (for Module 3 analytics)
-router.get('/:attemptId/summary', validateParams(AttemptIdParamSchema), getSummary);
+router.get('/:attemptId/history', protect, validateParams(AttemptIdParamSchema), getHistory);
+router.get('/:attemptId/summary', protect, validateParams(AttemptIdParamSchema), getSummary);
 
 module.exports = router;
-
