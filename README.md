@@ -1,8 +1,28 @@
 # Adaptive Learning Platform — PARAKH Adaptive Assessment System
 
-## Project Overview
-
 **Official Problem Statement:** Integration of AI for Adaptive Learning for MCQ Selection in PARAKH
+
+## Project Overview
+## Module 1 — Student Management & Pre-Assessment
+
+Module 1 is the **entry point** of the entire PARAKH platform. It handles everything from a student first creating an account to producing a fully computed baseline proficiency profile that the adaptive engine (Module 2) uses to personalise its question selection.
+
+---
+
+### Module 1 Features
+
+- ✅ **Student Registration** — Full sign-up form collecting name, email, password (bcrypt-hashed, 12 salt rounds), college, branch, and year of study. Duplicate email is rejected immediately.
+- ✅ **JWT Authentication** — On every successful login the server signs a JWT (HS256). The `protect` middleware verifies the token on every protected route and attaches `req.student` for downstream use.
+- ✅ **Student Dashboard** — Personalised SaaS-style dashboard with a collapsible sidebar, stat cards (overall accuracy, questions attempted, strong/weak topics), a Recharts topic-proficiency bar chart, and direct action buttons for Diagnostic Test and Adaptive Test.
+- ✅ **Diagnostic Pre-Assessment (10-question MCQ)** — Covers 5 topics (2 questions each) at a fixed medium difficulty. Includes a per-question countdown timer, a question navigation panel, mark-for-review flags, auto-save on every answer, and full session resumption if the student closes the tab mid-test.
+- ✅ **Baseline Proficiency Calculation** — Immediately after the pre-assessment is submitted the server computes: overall accuracy percentage, per-topic proficiency score (0–100), identification of strong topics (≥ 60 %) and weak topics (< 60 %), and an initial difficulty tier (Easy / Medium / Hard).
+- ✅ **BaselineResult Persistence** — The computed scores are written to the `BaselineResult` table in PostgreSQL and are immediately available to Module 2 via `GET /api/student/dashboard`.
+- ✅ **Active Assessment Recovery** — On every login the frontend checks `GET /api/assessment/active`. If an in-progress session is found, a modal offers the student the option to resume exactly where they left off or abandon the attempt.
+- ✅ **Assessment History** — A paginated table listing every pre-assessment attempt with its date, total score, and status (COMPLETED / ABANDONED).
+- ✅ **Student Profile Management** — Students can view and update their college, branch, and year of study at any time without affecting their assessment records.
+- ✅ **Teacher's Portal Link** — The dashboard sidebar contains a dedicated **Teacher's Portal** entry that navigates directly to the Module 3 AI question generation and analytics interface.
+
+---
 
 **Module 2 — Adaptive Testing System** is a fully working computer-adaptive testing (CAT) engine that:
 - Receives student baseline ability from Module 1
@@ -11,6 +31,23 @@
 - Delivers structured assessment summaries to Module 3
 
 ---
+## Module 2 Features
+
+- ✅ Adaptive question-difficulty engine (3 levels: Easy / Medium / Hard)
+- ✅ Per-topic proficiency tracking
+- ✅ Question repetition prevention
+- ✅ Server-enforced 90-second question timer with expiry
+- ✅ Duplicate submission protection
+- ✅ Correct answer hidden from frontend before submission
+- ✅ Post-answer explanation & difficulty change explanation
+- ✅ Assessment summary with topic breakdown for Module 3
+- ✅ 65 curated Mathematics questions (5 topics × 13 each)
+- ✅ Full REST API with Zod validation
+- ✅ React UI with responsive, accessible design
+- ✅ 20+ automated unit tests
+
+---
+
 
 ## Repository Structure
 
@@ -137,232 +174,8 @@ Groq or mock generation -> validation -> duplicate check -> PENDING
 	-> teacher review -> APPROVED -> Module 2 adaptive assessment
 ```
 
-Module 2 receives only approved questions through `QuestionBankAdapter`. Student-facing assessment responses do not include answer keys or explanations before submission.
-
 ---
 
-## Module 1 — Student Management & Pre-Assessment
-
-Module 1 is the **entry point** of the entire PARAKH platform. It handles everything from a student first creating an account to producing a fully computed baseline proficiency profile that the adaptive engine (Module 2) uses to personalise its question selection.
-
----
-
-### Module 1 Features
-
-- ✅ **Student Registration** — Full sign-up form collecting name, email, password (bcrypt-hashed, 12 salt rounds), college, branch, and year of study. Duplicate email is rejected immediately.
-- ✅ **JWT Authentication** — On every successful login the server signs a JWT (HS256). The `protect` middleware verifies the token on every protected route and attaches `req.student` for downstream use.
-- ✅ **Student Dashboard** — Personalised SaaS-style dashboard with a collapsible sidebar, stat cards (overall accuracy, questions attempted, strong/weak topics), a Recharts topic-proficiency bar chart, and direct action buttons for Diagnostic Test and Adaptive Test.
-- ✅ **Diagnostic Pre-Assessment (10-question MCQ)** — Covers 5 topics (2 questions each) at a fixed medium difficulty. Includes a per-question countdown timer, a question navigation panel, mark-for-review flags, auto-save on every answer, and full session resumption if the student closes the tab mid-test.
-- ✅ **Baseline Proficiency Calculation** — Immediately after the pre-assessment is submitted the server computes: overall accuracy percentage, per-topic proficiency score (0–100), identification of strong topics (≥ 60 %) and weak topics (< 60 %), and an initial difficulty tier (Easy / Medium / Hard).
-- ✅ **BaselineResult Persistence** — The computed scores are written to the `BaselineResult` table in PostgreSQL and are immediately available to Module 2 via `GET /api/student/dashboard`.
-- ✅ **Active Assessment Recovery** — On every login the frontend checks `GET /api/assessment/active`. If an in-progress session is found, a modal offers the student the option to resume exactly where they left off or abandon the attempt.
-- ✅ **Assessment History** — A paginated table listing every pre-assessment attempt with its date, total score, and status (COMPLETED / ABANDONED).
-- ✅ **Student Profile Management** — Students can view and update their college, branch, and year of study at any time without affecting their assessment records.
-- ✅ **Teacher's Portal Link** — The dashboard sidebar contains a dedicated **Teacher's Portal** entry that navigates directly to the Module 3 AI question generation and analytics interface.
-
----
-
-### Module 1 — Complete Workflow
-
-#### Step 1 — Student Registration
-
-```
-Student opens /register
-  → fills name, email, password, college, branch, year
-  → POST /api/auth/register
-      → password hashed with bcrypt (12 rounds)
-      → Student row created in PostgreSQL
-      → JWT signed and returned
-  → Token + student object saved to localStorage
-  → Redirected to /module1/dashboard
-```
-
-#### Step 2 — Login and Token Issuance
-
-```
-Student opens /login
-  → enters email + password
-  → POST /api/auth/login
-      → student record fetched from DB by email
-      → bcrypt.compare() checks password
-      → JWT signed: { sub: student.id, email }  (expires 7d)
-      → student object returned in response
-  → localStorage.authToken  = JWT
-  → localStorage.studentUser = { id, fullName, college, branch, yearOfStudy }
-  → App checks GET /api/assessment/active
-      → if ACTIVE attempt exists → show Resume modal
-      → if none → go to Dashboard
-```
-
-#### Step 3 — Dashboard
-
-```
-GET /api/student/dashboard   (Authorization: Bearer <JWT>)
-  → protect middleware verifies JWT, sets req.student
-  → Fetches latest BaselineResult for the student
-  → Returns:
-      {
-        student: { id, fullName, college, branch, yearOfStudy },
-        baseline: {
-          overallAccuracy,
-          topicScores: { topic → 0–100 },
-          strongTopics: [...],
-          weakTopics:   [...],
-          difficultyTier: "Easy" | "Medium" | "Hard",
-          completedAt
-        },
-        recentAttempts: [ ... ]
-      }
-  → Dashboard renders:
-      - Stat cards (accuracy, strong/weak topics, tier)
-      - Topic proficiency bar chart (Recharts)
-      - Diagnostic Test card  (locked if already done)
-      - Adaptive Test card    (locked until pre-assessment done)
-      - Sidebar: Dashboard | Pre-Assessment | Adaptive Assessment
-                 Performance Reports | Assessment History | Profile
-                 ── Teacher's Portal
-```
-
-#### Step 4 — Diagnostic Pre-Assessment
-
-```
-Student clicks "Start Diagnostic Test"
-  → POST /api/assessment/pre
-      → Creates PreAssessmentAttempt  { status: "ACTIVE" }
-      → Selects 10 questions (2 per topic, medium difficulty)
-        from the shared question bank
-      → Returns attempt ID + first question
-
-MCQ Interface (client/src/modules/module1/pages/PreAssessmentPage.jsx):
-  ┌─────────────────────────────────────────────────────┐
-  │  Question  3 / 10          ⏱  Topic: Algebra        │
-  │                                                     │
-  │  What is the value of x in 2x + 5 = 13 ?           │
-  │                                                     │
-  │  ○ A)  3      ○ B)  4      ○ C)  5     ○ D)  6     │
-  │                                                     │
-  │  [Mark for Review]  [← Prev]  [Save & Next →]      │
-  └─────────────────────────────────────────────────────┘
-  Navigation panel shows all 10 slots:
-    Green  = answered   Orange = marked for review
-    White  = not visited
-
-  On every "Save & Next":
-    → POST /api/assessment/answer
-        { attemptId, questionId, selectedOption, timeTaken }
-        → response saved to PreAssessmentResponse table
-        → auto-saves even if student refreshes the page
-
-  Session resumption:
-    → If student closes the browser and reopens:
-        GET /api/assessment/active → returns ACTIVE attempt
-        Resume modal shown → picks up from last unanswered question
-```
-
-#### Step 5 — Baseline Proficiency Calculation
-
-```
-Student clicks "Submit Assessment"
-  → POST /api/assessment/finish  { attemptId }
-      → Marks PreAssessmentAttempt as COMPLETED
-      → Reads all PreAssessmentResponse rows for the attempt
-      → For each topic:
-            correct   = responses where selectedOption == correctOption
-            attempted = total responses for that topic
-            topicScore = (correct / attempted) × 100
-      → Overall accuracy = (total correct / 10) × 100
-      → Strong topics  = topics where topicScore ≥ 60
-      → Weak topics    = topics where topicScore < 60
-      → Difficulty tier:
-            overall ≥ 70%  → "Hard"
-            overall ≥ 40%  → "Medium"
-            otherwise      → "Easy"
-      → BaselineResult row created / updated:
-            {
-              studentId,
-              overallAccuracy,
-              topicProficiency: { topic → 0.0–1.0 },   ← stored as fraction
-              strongTopics,
-              weakTopics,
-              difficultyTier,
-              completedAt: now()
-            }
-  → Response includes full BaselineResult
-  → Frontend navigates to Result page showing scores + tier
-```
-
-#### Step 6 — Handoff to Module 2 (Adaptive Engine)
-
-```
-Student clicks "Start Adaptive Test" on dashboard
-  → GET /api/student/dashboard  → reads latest BaselineResult
-  → POST /api/adaptive/start  (Module 2 endpoint)
-      Body: {
-        studentId,
-        baselineLevel:  difficultyTier,          ← "Easy"|"Medium"|"Hard"
-        topicScores:    { topic → score × 100 }  ← converted to 0–100 scale
-      }
-  → Module 2 seeds its internal ability estimate from baselineLevel
-  → Module 2 begins adaptive question selection (IRT / difficulty ladder)
-  → Student continues in Module 2's MCQ interface
-```
-
----
-
-### Module 1 API Reference
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/api/auth/register` | Public | Create a new student account |
-| `POST` | `/api/auth/login` | Public | Authenticate and receive JWT |
-| `GET` | `/api/student/profile` | 🔒 JWT | Get student profile details |
-| `PUT` | `/api/student/profile` | 🔒 JWT | Update college / branch / year |
-| `GET` | `/api/student/dashboard` | 🔒 JWT | Dashboard data + baseline result |
-| `POST` | `/api/assessment/pre` | 🔒 JWT | Start a new pre-assessment attempt |
-| `POST` | `/api/assessment/answer` | 🔒 JWT | Save one question response |
-| `POST` | `/api/assessment/finish` | 🔒 JWT | Submit and calculate baseline |
-| `GET` | `/api/assessment/active` | 🔒 JWT | Check for in-progress attempt |
-| `GET` | `/api/assessment/history` | 🔒 JWT | List all past attempts |
-| `GET` | `/api/assessment/result/:id` | 🔒 JWT | Fetch a specific attempt's result |
-
----
-
-### Module 1 — Database Models
-
-```
-Student
-  id · fullName · email · passwordHash · college · branch · yearOfStudy · createdAt
-
-PreAssessmentAttempt
-  id · studentId (→ Student) · status · startedAt · completedAt
-
-PreAssessmentResponse
-  id · attemptId (→ PreAssessmentAttempt) · questionId · selectedOption
-     · isCorrect · timeTaken · savedAt
-
-BaselineResult
-  id · studentId (→ Student) · overallAccuracy · topicProficiency (JSON)
-     · strongTopics (JSON) · weakTopics (JSON) · difficultyTier · completedAt
-```
-
----
-
-## Module 2 Features
-
-- ✅ Adaptive question-difficulty engine (3 levels: Easy / Medium / Hard)
-- ✅ Per-topic proficiency tracking
-- ✅ Question repetition prevention
-- ✅ Server-enforced 90-second question timer with expiry
-- ✅ Duplicate submission protection
-- ✅ Correct answer hidden from frontend before submission
-- ✅ Post-answer explanation & difficulty change explanation
-- ✅ Assessment summary with topic breakdown for Module 3
-- ✅ 65 curated Mathematics questions (5 topics × 13 each)
-- ✅ Full REST API with Zod validation
-- ✅ React UI with responsive, accessible design
-- ✅ 20+ automated unit tests
-
----
 
 ## Environment Variables
 
