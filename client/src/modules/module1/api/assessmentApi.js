@@ -1,5 +1,5 @@
 // src/modules/module1/api/assessmentApi.js
-// Client API service for pre-assessment initialization, questions, and responses.
+// Client API service for pre-assessment initialization, questions, response tracking, and baseline calculation.
 
 import axios from 'axios';
 
@@ -32,24 +32,50 @@ export async function getPreAssessmentAttempt(attemptId) {
 }
 
 /**
- * Persist an individual question response in real time to the server.
+ * Prompt 5: Record an individual question answer in real time.
+ * POST /api/assessment/answer
  */
-export async function savePreAssessmentResponse(attemptId, { questionId, selectedOption, responseTimeSec = 0 }) {
+export async function recordAssessmentAnswer({ assessmentId, questionId, selectedOption, responseTimeSec = 0 }) {
   const response = await axios.post(
-    `/api/assessment/pre/${attemptId}/response`,
-    { questionId, selectedOption, responseTimeSec },
+    '/api/assessment/answer',
+    { assessmentId, questionId, selectedOption, responseTimeSec },
     { headers: authHeader() }
   );
   return response.data;
 }
 
 /**
+ * Prompt 5: Retrieve all recorded responses for an assessment attempt.
+ * GET /api/assessment/:assessmentId/responses
+ */
+export async function getAssessmentResponses(assessmentId) {
+  const response = await axios.get(
+    `/api/assessment/${assessmentId}/responses`,
+    { headers: authHeader() }
+  );
+  return response.data;
+}
+
+/**
+ * Backward-compatible alias for saving response.
+ */
+export async function savePreAssessmentResponse(attemptId, { questionId, selectedOption, responseTimeSec = 0 }) {
+  return recordAssessmentAnswer({
+    assessmentId: attemptId,
+    questionId,
+    selectedOption,
+    responseTimeSec,
+  });
+}
+
+/**
  * Finalize the pre-assessment and compute baseline results on the server.
+ * POST /api/assessment/finish
  */
 export async function finishPreAssessment(attemptId, responses = []) {
   const response = await axios.post(
     '/api/assessment/finish',
-    { attemptId, responses },
+    { attemptId, assessmentId: attemptId, responses },
     { headers: authHeader() }
   );
   return response.data;
@@ -57,6 +83,7 @@ export async function finishPreAssessment(attemptId, responses = []) {
 
 /**
  * Fetch the latest baseline diagnostic scores for the current student.
+ * GET /api/assessment/pre/result
  */
 export async function fetchPreResult() {
   const response = await axios.get(

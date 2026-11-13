@@ -48,6 +48,7 @@ model Student {
   // Relations
   adaptiveAssessments   AdaptiveAssessment[]
   preAssessmentAttempts PreAssessmentAttempt[]
+  preAssessmentResponses PreAssessmentResponse[]
   baselineResult        BaselineResult?
 }
 
@@ -191,10 +192,16 @@ model PreAssessmentResponse {
   id              String   @id @default(uuid())
   attemptId       String
   attempt         PreAssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  studentId       Int?
+  student         Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
   questionId      String
-  selectedOption  String?   // A‑D
-  responseTimeSec Float
+  selectedOption  String?   // A‑D or null
+  responseTimeSec Float    @default(0.0)
   answeredAt      DateTime @default(now())
+
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+  @@index([studentId])
 }
 
 // -------------------------------------------------------------------

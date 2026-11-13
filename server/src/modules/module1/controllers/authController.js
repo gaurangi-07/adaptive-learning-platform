@@ -17,7 +17,10 @@ try {
 }
 
 // In-memory student cache for local testing / development when PostgreSQL is offline
-const inMemoryStudents = new Map();
+if (!global.__parakh_inMemoryStudents) {
+  global.__parakh_inMemoryStudents = new Map();
+}
+const inMemoryStudents = global.__parakh_inMemoryStudents;
 let fallbackIdCounter = 1000;
 
 /**

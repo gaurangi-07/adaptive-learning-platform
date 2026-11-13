@@ -5,6 +5,7 @@
 
 const { PrismaClient } = require('@prisma/client');
 const { inMemoryStudents } = require('./authController');
+const { inMemoryBaselines, inMemoryAttempts } = require('./preAssessmentController');
 
 let prisma;
 try {
@@ -122,6 +123,19 @@ async function getDashboard(req, res) {
       for (const s of inMemoryStudents.values()) {
         if (s.id === studentId) {
           studentName = s.fullName;
+          break;
+        }
+      }
+    }
+
+    if (!baseline) {
+      baseline = inMemoryBaselines.get(studentId) || null;
+    }
+
+    if (!ongoing) {
+      for (const a of inMemoryAttempts.values()) {
+        if (a.studentId === studentId && a.status === 'IN_PROGRESS') {
+          ongoing = a;
           break;
         }
       }

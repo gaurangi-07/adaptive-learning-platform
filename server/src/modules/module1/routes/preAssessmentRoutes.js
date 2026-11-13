@@ -8,6 +8,8 @@ const express = require('express');
 const {
   startPreAssessment,
   getPreAssessmentAttempt,
+  recordAssessmentAnswer,
+  getAssessmentResponses,
   savePreAssessmentResponse,
   finishPreAssessment,
   getPreResult,
@@ -25,13 +27,19 @@ router.post('/pre', startPreAssessment);
 // GET /api/assessment/pre/:attemptId – Fetch attempt questions and restore saved responses
 router.get('/pre/:attemptId', getPreAssessmentAttempt);
 
-// POST /api/assessment/pre/:attemptId/response – Securely persist question response
+// Prompt 5: POST /api/assessment/answer – Record student's response to a question
+router.post('/answer', recordAssessmentAnswer);
+
+// Prompt 5: GET /api/assessment/:assessmentId/responses – Retrieve all responses for an assessment
+router.get('/:assessmentId/responses', getAssessmentResponses);
+
+// Backward-compatible alias: POST /api/assessment/pre/:attemptId/response
 router.post('/pre/:attemptId/response', savePreAssessmentResponse);
 
-// POST /api/assessment/finish – Calculate baseline & finalize attempt
+// Prompt 6: POST /api/assessment/finish – Calculate baseline & finalize attempt
 router.post('/finish', finishPreAssessment);
 
-// GET /api/assessment/pre/result – Fetch latest baseline result
+// Prompt 6: GET /api/assessment/pre/result – Fetch latest baseline result
 router.get('/pre/result', getPreResult);
 
 module.exports = router;

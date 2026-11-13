@@ -1,7 +1,7 @@
 /**
  * @file Dashboard.jsx
  * @description Modern Student Dashboard for PARAKH Adaptive Learning Platform.
- * Displays baseline score, topic proficiencies, and links to assessments.
+ * Displays diagnostic baseline scores, strong & weak topics, and starting CAT tier.
  */
 
 import { useEffect, useState } from 'react';
@@ -29,7 +29,7 @@ export default function Dashboard() {
           setError(resp.error || 'Failed to load dashboard.');
         }
       } catch (e) {
-        // If profile fetch fails or session expired, allow fallback to locally stored student
+        // Fallback to local storage profile if offline or in development
         if (localStudent) {
           setData({
             studentName: localStudent.fullName || 'Student',
@@ -67,6 +67,52 @@ export default function Dashboard() {
   const studentName = data?.studentName || localStudent?.fullName || 'Student';
   const assessmentStatus = data?.assessmentStatus || 'Not Started';
   const baseline = data?.baseline;
+
+  // Extract topic proficiencies and metadata
+  let rawProficiency = baseline?.topicProficiency || null;
+  if (typeof rawProficiency === 'string') {
+    try {
+      rawProficiency = JSON.parse(rawProficiency);
+    } catch {
+      rawProficiency = null;
+    }
+  }
+
+  // Filter out non-topic metadata keys
+  const metadataKeys = new Set([
+    'topicAccuracy',
+    'topicScores',
+    'strongTopics',
+    'weakTopics',
+    'unknownTopics',
+    'baselineLevel',
+    'evaluatedAt',
+  ]);
+
+  const topicEntries = rawProficiency
+    ? Object.entries(rawProficiency).filter(([k]) => !metadataKeys.has(k))
+    : [];
+
+  const strongTopics = rawProficiency?.strongTopics || [];
+  const weakTopics = rawProficiency?.weakTopics || [];
+  const unknownTopics = rawProficiency?.unknownTopics || [];
+
+  // Determine starting tier
+  const baselineLevel = rawProficiency?.baselineLevel || (
+    baseline?.overallAccuracy >= 70 ? 3 : baseline?.overallAccuracy < 40 ? 1 : 2
+  );
+
+  const tierLabel = baselineLevel === 3
+    ? 'Level 3 · Hard / Advanced'
+    : baselineLevel === 1
+    ? 'Level 1 · Easy / Novice'
+    : 'Level 2 · Medium / Intermediate';
+
+  const tierBadgeClass = baselineLevel === 3
+    ? 'bg-purple-100 text-purple-800 border-purple-300'
+    : baselineLevel === 1
+    ? 'bg-blue-100 text-blue-800 border-blue-300'
+    : 'bg-amber-100 text-amber-800 border-amber-300';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-10 px-4 sm:px-6">
@@ -109,7 +155,7 @@ export default function Dashboard() {
           <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-2.5">
               <span className="text-xl">🎉</span>
-              <span>Pre-Assessment successfully submitted! Your baseline proficiency scores and starting ability tier have been updated below.</span>
+              <span>Pre-Assessment completed! Your baseline knowledge profile, topic accuracies, and starting CAT tier have been computed.</span>
             </div>
             <button
               type="button"
@@ -131,7 +177,7 @@ export default function Dashboard() {
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-600/10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-2">
             <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-semibold uppercase tracking-wider backdrop-blur-sm">
-              Current Session
+              Session Active
             </span>
             <h1 className="text-2xl sm:text-3xl font-black">Ready to test your ability, {studentName}?</h1>
             <p className="text-indigo-100 text-xs sm:text-sm max-w-lg leading-relaxed">
@@ -160,7 +206,7 @@ export default function Dashboard() {
             </div>
             <p className="text-xs text-slate-500">
               {assessmentStatus === 'Completed'
-                ? 'Your diagnostic baseline is active and calibrating tests.'
+                ? 'Your baseline knowledge profile is active and calibrating tests.'
                 : 'Take the pre-assessment to establish your baseline proficiency.'}
             </p>
             {assessmentStatus !== 'Completed' && (
@@ -178,14 +224,18 @@ export default function Dashboard() {
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Accuracy</p>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-black text-indigo-600">
-                {baseline ? `${baseline.overallAccuracy.toFixed(1)}%` : '75.0%'}
+                {baseline ? `${baseline.overallAccuracy.toFixed(1)}%` : '—'}
               </span>
-              <span className="text-xs text-slate-400 font-medium">
-                ({baseline ? `${baseline.correctAnswers} / ${baseline.totalQuestions}` : 'Diagnostic baseline'})
-              </span>
+              {baseline && (
+                <span className="text-xs text-slate-400 font-medium">
+                  ({baseline.correctAnswers} / {baseline.totalQuestions} correct)
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-500">
-              Evaluated across core subject competencies.
+              {baseline
+                ? `Calculated as (${baseline.correctAnswers} / ${baseline.totalQuestions}) × 100% on pre-assessment.`
+                : 'Complete the diagnostic test to compute your baseline accuracy.'}
             </p>
           </div>
 
@@ -193,39 +243,110 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-3">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Starting Tier</p>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                Level 2 · Medium
+              <span className={`px-3 py-1 rounded-full text-xs font-bold border ${tierBadgeClass}`}>
+                {tierLabel}
               </span>
             </div>
             <p className="text-xs text-slate-500">
-              Initial CAT starting difficulty. Dynamically shifts to Easy or Hard based on consecutive answers.
+              Initial CAT starting difficulty. Dynamically calibrated to your baseline ability score.
             </p>
           </div>
         </div>
 
+        {/* Strong & Weak Topics Identification (Prompt 6) */}
+        {baseline && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Strong Topics */}
+            <div className="bg-white rounded-2xl border border-emerald-100 p-5 shadow-sm space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-600 text-lg">💪</span>
+                <h3 className="text-sm font-bold text-slate-900">Strong Topics (≥ 70% Accuracy)</h3>
+              </div>
+              {strongTopics.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {strongTopics.map((topic) => (
+                    <span
+                      key={topic}
+                      className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    >
+                      ✓ {topic}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">No topics currently above 70%. Focus on fundamentals.</p>
+              )}
+            </div>
+
+            {/* Weak Topics */}
+            <div className="bg-white rounded-2xl border border-amber-100 p-5 shadow-sm space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-amber-600 text-lg">🎯</span>
+                <h3 className="text-sm font-bold text-slate-900">Topics to Strengthen (&lt; 50% Accuracy)</h3>
+              </div>
+              {weakTopics.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {weakTopics.map((topic) => (
+                    <span
+                      key={topic}
+                      className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200"
+                    >
+                      ! {topic}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">Great work! No weak topics detected below 50%.</p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Topic Proficiency Breakdown */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-900">Topic Proficiency Overview</h2>
-            <span className="text-xs text-slate-400">Module 1 Baseline</span>
+            <h2 className="text-base font-bold text-slate-900">Topic-Wise Baseline Proficiency</h2>
+            <span className="text-xs text-slate-400">Module 1 Diagnostic</span>
           </div>
 
-          {baseline?.topicProficiency ? (
+          {topicEntries.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {Object.entries(baseline.topicProficiency).map(([topic, score]) => (
-                <div key={topic} className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5">
-                  <div className="flex justify-between text-xs font-semibold text-slate-700">
-                    <span>{topic}</span>
-                    <span className="text-indigo-600">{(score * 100).toFixed(0)}%</span>
+              {topicEntries.map(([topic, score]) => {
+                const isUnknown = score === 'unknown' || score === null || score === undefined;
+                const numericScore = typeof score === 'number' ? score : parseFloat(score) || 0;
+                const percent = Math.round(numericScore * 100);
+
+                return (
+                  <div key={topic} className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                      <span className="font-bold text-slate-800">{topic}</span>
+                      {isUnknown ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium">
+                          Unknown (Unattempted)
+                        </span>
+                      ) : (
+                        <span className="text-indigo-600 font-bold">
+                          {percent}% ({numericScore.toFixed(2)} ability)
+                        </span>
+                      )}
+                    </div>
+                    <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isUnknown
+                            ? 'bg-slate-300 w-0'
+                            : percent >= 70
+                            ? 'bg-emerald-500'
+                            : percent < 50
+                            ? 'bg-amber-500'
+                            : 'bg-indigo-600'
+                        }`}
+                        style={{ width: isUnknown ? '0%' : `${Math.min(100, Math.max(5, percent))}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-indigo-600 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(100, Math.max(10, score * 100))}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">

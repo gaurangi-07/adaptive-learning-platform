@@ -1,7 +1,7 @@
 /**
  * @file preAssessment.test.js
  * @description Unit tests for Pre-Assessment Initialization, Question Delivery,
- * Response Tracking, and Baseline Evaluation (Module 1).
+ * Response Tracking (Prompt 5), and Baseline Evaluation (Prompt 6).
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -9,8 +9,11 @@ import {
   selectCuratedPreAssessmentQuestions,
   startPreAssessment,
   getPreAssessmentAttempt,
+  recordAssessmentAnswer,
+  getAssessmentResponses,
   savePreAssessmentResponse,
   finishPreAssessment,
+  getPreResult,
   inMemoryAttempts,
   inMemoryResponses,
   inMemoryBaselines,
@@ -146,11 +149,10 @@ describe('Module 1: Pre-Assessment Initialization & Assessment Engine', () => {
       const q1Id = resStart.data.questions[0].id;
       const reqSave = {
         student: { id: 303 },
-        params: { attemptId },
-        body: { questionId: q1Id, selectedOption: 'B', responseTimeSec: 25 },
+        body: { assessmentId: attemptId, questionId: q1Id, selectedOption: 'B', responseTimeSec: 25 },
       };
       const resSave = { json(d) { this.data = d; return this; }, status() { return this; } };
-      await savePreAssessmentResponse(reqSave, resSave);
+      await recordAssessmentAnswer(reqSave, resSave);
 
       // 3. Fetch attempt details (simulating page refresh)
       const reqGet = { student: { id: 303 }, params: { attemptId } };
@@ -188,57 +190,281 @@ describe('Module 1: Pre-Assessment Initialization & Assessment Engine', () => {
   });
 
   // ──────────────────────────────────────────────────────────
-  // 4. REAL-TIME RESPONSE SAVING (POST /api/assessment/pre/:attemptId/response)
+  // 4. PROMPT 5: RESPONSE TRACKING (POST /api/assessment/answer)
   // ──────────────────────────────────────────────────────────
-  describe('Response Persistence', () => {
-    it('persists response and updates response if question is changed', async () => {
+  describe('Prompt 5: Response Tracking & Storage', () => {
+    it('saves a response with studentId, assessmentId, questionId, selectedOption, and responseTimeSec', async () => {
+      const reqStart = { student: { id: 501, email: 'student501@college.edu' }, body: {} };
+      const resStart = { status() { return this; }, json(d) { this.data = d; return this; } };
+      await startPreAssessment(reqStart, resStart);
+      const attemptId = resStart.data.attemptId;
+      const qId = resStart.data.questions[0].id;
+
+      const reqAns = {
+        student: { id: 501 },
+        body: {
+          assessmentId: attemptId,
+          questionId: qId,
+          selectedOption: 'A',
+          responseTimeSec: 15.5,
+        },
+      };
+
+      let statusCode = 0;
+      let responseBody = null;
+      const resAns = {
+        status(c) { statusCode = c; return this; },
+        json(d) { responseBody = d; return this; },
+      };
+
+      await recordAssessmentAnswer(reqAns, resAns);
+
+      expect(statusCode).toBe(200);
+      expect(responseBody.success).toBe(true);
+      expect(responseBody.data.studentId).toBe(501);
+      expect(responseBody.data.assessmentId).toBe(attemptId);
+      expect(responseBody.data.questionId).toBe(qId);
+      expect(responseBody.data.selectedOption).toBe('A');
+      expect(responseBody.data.responseTimeSec).toBe(15.5);
+      expect(responseBody.data.isAnswered).toBe(true);
+    });
+
+    it('updates response when question is changed without creating duplicate records', async () => {
+      const reqStart = { student: { id: 502, email: 'student502@college.edu' }, body: {} };
+      const resStart = { status() { return this; }, json(d) { this.data = d; return this; } };
+      await startPreAssessment(reqStart, resStart);
+      const attemptId = resStart.data.attemptId;
+      const qId = resStart.data.questions[0].id;
+
+      // First answer
+      const req1 = {
+        student: { id: 502 },
+        body: { assessmentId: attemptId, questionId: qId, selectedOption: 'A', responseTimeSec: 10 },
+      };
+      const res1 = { status() { return this; }, json(d) { this.data = d; return this; } };
+      await recordAssessmentAnswer(req1, res1);
+
+      // Changed answer
+      const req2 = {
+        student: { id: 502 },
+        body: { assessmentId: attemptId, questionId: qId, selectedOption: 'C', responseTimeSec: 22 },
+      };
+      const res2 = { status() { return this; }, json(d) { this.data = d; return this; } };
+      await recordAssessmentAnswer(req2, res2);
+
+      const attemptResponses = inMemoryResponses.get(attemptId);
+      expect(attemptResponses.size).toBe(1); // Only 1 record for this question (no duplicate)
+      const stored = attemptResponses.get(qId);
+      expect(stored.selectedOption).toBe('C');
+      expect(stored.responseTimeSec).toBe(22);
+    });
+
+    it('verifies that the question belongs to the assessment (rejects foreign questionId)', async () => {
+      const reqStart = { student: { id: 503, email: 'student503@college.edu' }, body: {} };
+      const resStart = { status() { return this; }, json(d) { this.data = d; return this; } };
+      await startPreAssessment(reqStart, resStart);
+      const attemptId = resStart.data.attemptId;
+
+      const reqInvalid = {
+        student: { id: 503 },
+        body: {
+          assessmentId: attemptId,
+          questionId: 'non-existent-question-id-999',
+          selectedOption: 'A',
+          responseTimeSec: 10,
+        },
+      };
+
+      let statusCode = 0;
+      let responseBody = null;
+      const resInvalid = {
+        status(c) { statusCode = c; return this; },
+        json(d) { responseBody = d; return this; },
+      };
+
+      await recordAssessmentAnswer(reqInvalid, resInvalid);
+
+      expect(statusCode).toBe(400);
+      expect(responseBody.success).toBe(false);
+      expect(responseBody.error).toContain('does not belong');
+    });
+
+    it('handles unanswered question by storing selectedOption as null', async () => {
+      const reqStart = { student: { id: 504, email: 'student504@college.edu' }, body: {} };
+      const resStart = { status() { return this; }, json(d) { this.data = d; return this; } };
+      await startPreAssessment(reqStart, resStart);
+      const attemptId = resStart.data.attemptId;
+      const qId = resStart.data.questions[0].id;
+
+      const reqUnanswered = {
+        student: { id: 504 },
+        body: {
+          assessmentId: attemptId,
+          questionId: qId,
+          selectedOption: null, // explicit unanswered
+          responseTimeSec: 5,
+        },
+      };
+
+      const resUnanswered = { status() { return this; }, json(d) { this.data = d; return this; } };
+      await recordAssessmentAnswer(reqUnanswered, resUnanswered);
+
+      expect(resUnanswered.data.success).toBe(true);
+      expect(resUnanswered.data.data.selectedOption).toBeNull();
+      expect(resUnanswered.data.data.isAnswered).toBe(false);
+    });
+
+    it('prevents a student from submitting answers to another student assessment attempt', async () => {
       const reqStart = { student: { id: 505, email: 'student505@college.edu' }, body: {} };
       const resStart = { status() { return this; }, json(d) { this.data = d; return this; } };
       await startPreAssessment(reqStart, resStart);
       const attemptId = resStart.data.attemptId;
       const qId = resStart.data.questions[0].id;
 
-      // Select 'A'
-      const req1 = {
-        student: { id: 505 },
-        params: { attemptId },
-        body: { questionId: qId, selectedOption: 'A', responseTimeSec: 10 },
+      // Another student tries to answer
+      const reqOther = {
+        student: { id: 999 },
+        body: { assessmentId: attemptId, questionId: qId, selectedOption: 'A' },
       };
-      const res1 = { json(d) { this.data = d; return this; }, status() { return this; } };
-      await savePreAssessmentResponse(req1, res1);
-      expect(res1.data.saved).toBe(true);
 
-      // Change answer to 'C'
-      const req2 = {
-        student: { id: 505 },
-        params: { attemptId },
-        body: { questionId: qId, selectedOption: 'C', responseTimeSec: 18 },
-      };
-      const res2 = { json(d) { this.data = d; return this; }, status() { return this; } };
-      await savePreAssessmentResponse(req2, res2);
+      let statusCode = 0;
+      const resOther = { status(c) { statusCode = c; return this; }, json() { return this; } };
+      await recordAssessmentAnswer(reqOther, resOther);
 
-      const stored = inMemoryResponses.get(attemptId).get(qId);
-      expect(stored.selectedOption).toBe('C');
-      expect(stored.responseTimeSec).toBe(18);
+      expect(statusCode).toBe(403);
     });
   });
 
   // ──────────────────────────────────────────────────────────
-  // 5. ATTEMPT COMPLETION & BASELINE CALCULATION (POST /api/assessment/finish)
+  // 5. PROMPT 5: RETRIEVE RESPONSES (GET /api/assessment/:assessmentId/responses)
   // ──────────────────────────────────────────────────────────
-  describe('Attempt Finalization & Baseline Evaluation', () => {
-    it('calculates overall accuracy and topic proficiency, and marks attempt COMPLETED', async () => {
-      const reqStart = { student: { id: 606, email: 'student606@college.edu' }, body: {} };
+  describe('Prompt 5: Assessment Responses Retrieval', () => {
+    it('retrieves all responses with answered and unanswered counts', async () => {
+      const reqStart = { student: { id: 550, email: 'student550@college.edu' }, body: {} };
       const resStart = { status() { return this; }, json(d) { this.data = d; return this; } };
       await startPreAssessment(reqStart, resStart);
       const attemptId = resStart.data.attemptId;
       const questions = resStart.data.questions;
 
-      // Answer questions with knowledge of question bank answers
+      // Answer 3 of 10 questions
+      for (let i = 0; i < 3; i++) {
+        const reqAns = {
+          student: { id: 550 },
+          body: {
+            assessmentId: attemptId,
+            questionId: questions[i].id,
+            selectedOption: 'B',
+            responseTimeSec: 12,
+          },
+        };
+        const resAns = { status() { return this; }, json() { return this; } };
+        await recordAssessmentAnswer(reqAns, resAns);
+      }
+
+      // Fetch responses
+      const reqFetch = {
+        student: { id: 550 },
+        params: { assessmentId: attemptId },
+      };
+
+      let statusCode = 0;
+      let body = null;
+      const resFetch = {
+        status(c) { statusCode = c; return this; },
+        json(d) { body = d; return this; },
+      };
+
+      await getAssessmentResponses(reqFetch, resFetch);
+
+      expect(statusCode).toBe(200);
+      expect(body.success).toBe(true);
+      expect(body.assessmentId).toBe(attemptId);
+      expect(body.studentId).toBe(550);
+      expect(body.totalQuestions).toBe(10);
+      expect(body.answeredCount).toBe(3);
+      expect(body.unansweredCount).toBe(7);
+      expect(body.responses.length).toBe(10);
+    });
+
+    it('rejects another student attempting to read responses with 403', async () => {
+      const reqStart = { student: { id: 551, email: 'student551@college.edu' }, body: {} };
+      const resStart = { status() { return this; }, json(d) { this.data = d; return this; } };
+      await startPreAssessment(reqStart, resStart);
+      const attemptId = resStart.data.attemptId;
+
+      const reqFetchOther = {
+        student: { id: 999 },
+        params: { assessmentId: attemptId },
+      };
+
+      let statusCode = 0;
+      const resFetchOther = { status(c) { statusCode = c; return this; }, json() { return this; } };
+      await getAssessmentResponses(reqFetchOther, resFetchOther);
+
+      expect(statusCode).toBe(403);
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────
+  // 6. PROMPT 6: BASELINE PROFICIENCY & INITIAL SCORING
+  // ──────────────────────────────────────────────────────────
+  describe('Prompt 6: Initial Score & Baseline Proficiency Calculation', () => {
+    it('marks unattempted topics as "unknown" instead of zero', async () => {
+      const reqStart = { student: { id: 601, email: 'student601@college.edu' }, body: {} };
+      const resStart = { status() { return this; }, json(d) { this.data = d; return this; } };
+      await startPreAssessment(reqStart, resStart);
+      const attemptId = resStart.data.attemptId;
+      const questions = resStart.data.questions;
+
+      // Only answer Algebra and Geometry questions; leave Trigonometry and Statistics unattempted
+      const responses = [];
+      for (const q of questions) {
+        const fullQ = questionBankAdapter.getQuestionById(q.id);
+        if (fullQ.topic === 'Algebra') {
+          responses.push({ questionId: q.id, selectedOption: fullQ.correctOption, responseTimeSec: 20 });
+        } else if (fullQ.topic === 'Geometry') {
+          responses.push({ questionId: q.id, selectedOption: fullQ.correctOption, responseTimeSec: 25 });
+        }
+        // Do not add any responses for Arithmetic, Trigonometry, Statistics
+      }
+
+      const reqFinish = {
+        student: { id: 601 },
+        body: { attemptId, responses },
+      };
+
+      let finishBody = null;
+      const resFinish = {
+        status() { return this; },
+        json(d) { finishBody = d; return this; },
+      };
+
+      await finishPreAssessment(reqFinish, resFinish);
+
+      expect(finishBody.success).toBe(true);
+      expect(finishBody.topicProficiency['Algebra']).toBe(1.0);
+      expect(finishBody.topicProficiency['Geometry']).toBe(1.0);
+
+      // PROMPT 6 REQUIREMENT: For topics with no attempted questions, mark proficiency as unknown instead of zero
+      expect(finishBody.topicProficiency['Statistics']).toBe('unknown');
+      expect(finishBody.topicProficiency['Trigonometry']).toBe('unknown');
+      expect(finishBody.topicAccuracy['Statistics']).toBeNull();
+      expect(finishBody.unknownTopics).toContain('Statistics');
+      expect(finishBody.unknownTopics).toContain('Trigonometry');
+    });
+
+    it('calculates overall accuracy and identifies strong and weak topics correctly', async () => {
+      const reqStart = { student: { id: 602, email: 'student602@college.edu' }, body: {} };
+      const resStart = { status() { return this; }, json(d) { this.data = d; return this; } };
+      await startPreAssessment(reqStart, resStart);
+      const attemptId = resStart.data.attemptId;
+      const questions = resStart.data.questions;
+
+      // Answer 7 correct, 3 wrong across topics
       const responses = questions.map((q, idx) => {
         const fullQ = questionBankAdapter.getQuestionById(q.id);
-        // Correct for first 7, incorrect for remaining 3
-        const selectedOption = idx < 7 ? fullQ.correctOption : 'D';
+        // Correct for first 7, wrong for next 3
+        const selectedOption = idx < 7 ? fullQ.correctOption : 'Z';
         return {
           questionId: q.id,
           selectedOption,
@@ -247,7 +473,7 @@ describe('Module 1: Pre-Assessment Initialization & Assessment Engine', () => {
       });
 
       const reqFinish = {
-        student: { id: 606 },
+        student: { id: 602 },
         body: { attemptId, responses },
       };
 
@@ -261,25 +487,27 @@ describe('Module 1: Pre-Assessment Initialization & Assessment Engine', () => {
 
       expect(finishBody.success).toBe(true);
       expect(finishBody.totalQuestions).toBe(10);
-      expect(finishBody.correctAnswers).toBeGreaterThanOrEqual(7);
-      expect(finishBody.overallAccuracy).toBeGreaterThanOrEqual(70.0);
-      expect(finishBody.topicProficiency).toBeDefined();
+      expect(finishBody.correctAnswers).toBe(7);
+      expect(finishBody.overallAccuracy).toBe(70.0);
+      expect(finishBody.baselineLevel).toBe(3); // Overall accuracy >= 70% -> Level 3
 
-      // Check normalized 0-1 topic proficiencies
-      for (const [topic, score] of Object.entries(finishBody.topicProficiency)) {
-        expect(score).toBeGreaterThanOrEqual(0.0);
-        expect(score).toBeLessThanOrEqual(1.0);
-      }
+      // Strong topics should contain topics with >= 70% accuracy
+      expect(finishBody.strongTopics.length).toBeGreaterThan(0);
 
-      // Check stored baseline
-      const storedBaseline = inMemoryBaselines.get(606);
-      expect(storedBaseline).toBeDefined();
-      expect(storedBaseline.overallAccuracy).toBe(finishBody.overallAccuracy);
+      // Verify GET /api/assessment/pre/result returns the stored baseline
+      const reqResult = { student: { id: 602 } };
+      let resultBody = null;
+      const resResult = {
+        status() { return this; },
+        json(d) { resultBody = d; return this; },
+      };
 
-      // Verify attempt is marked COMPLETED
-      const attempt = inMemoryAttempts.get(attemptId);
-      expect(attempt.status).toBe('COMPLETED');
-      expect(attempt.completedAt).toBeDefined();
+      await getPreResult(reqResult, resResult);
+
+      expect(resultBody.success).toBe(true);
+      expect(resultBody.baseline.overallAccuracy).toBe(70.0);
+      expect(resultBody.baseline.correctAnswers).toBe(7);
+      expect(resultBody.baseline.topicProficiency).toBeDefined();
     });
   });
 
