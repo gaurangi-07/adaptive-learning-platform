@@ -141,6 +141,35 @@ Module 2 receives only approved questions through `QuestionBankAdapter`. Student
 
 ---
 
+## Module 1 Features — Student Management & Pre-Assessment
+
+- ✅ **Student Registration**: Full signup with name, email, password (bcrypt hashed), college, branch, and year of study.
+- ✅ **JWT Authentication**: Secure login with JSON Web Tokens; `protect` middleware guards all student routes.
+- ✅ **Student Dashboard**: Personalized SaaS-style dashboard with collapsible sidebar, stats cards, topic proficiency bar chart, and performance overview.
+- ✅ **Diagnostic Pre-Assessment**: 10-question MCQ interface covering 5 topics with countdown timer, navigation panel, mark-for-review, auto-save, and session resumption.
+- ✅ **Baseline Proficiency Calculation**: After pre-assessment, computes overall accuracy, topic-wise proficiency (0–100), strong/weak topics, and initial difficulty tier.
+- ✅ **BaselineResult Integration**: Stores calculated baseline in PostgreSQL and passes `baselineLevel` + `topicScores` to Module 2 adaptive engine on assessment start.
+- ✅ **Assessment History**: Full history of pre-assessment attempts with status, score, and date.
+- ✅ **Student Profile**: View and edit personal details (college, branch, year of study).
+- ✅ **Active Assessment Recovery**: Detects in-progress sessions on login and offers resume modal.
+- ✅ **Teacher's Portal Link**: Dashboard sidebar links directly to Module 3 Teacher Portal.
+
+### Module 1 API
+
+- `POST /api/auth/register` — Register a new student account.
+- `POST /api/auth/login` — Authenticate and receive a JWT.
+- `GET /api/student/profile` — Get student profile (protected).
+- `PUT /api/student/profile` — Update student profile (protected).
+- `GET /api/student/dashboard` — Get dashboard data including baseline (protected).
+- `POST /api/assessment/pre` — Start a new pre-assessment attempt (protected).
+- `POST /api/assessment/answer` — Save a question response (protected).
+- `POST /api/assessment/finish` — Complete assessment and calculate baseline (protected).
+- `GET /api/assessment/active` — Check for an in-progress attempt (protected).
+- `GET /api/assessment/history` — List all past attempts (protected).
+- `GET /api/assessment/result/:id` — Get a specific attempt's result (protected).
+
+---
+
 ## Module 2 Features
 
 - ✅ Adaptive question-difficulty engine (3 levels: Easy / Medium / Hard)
