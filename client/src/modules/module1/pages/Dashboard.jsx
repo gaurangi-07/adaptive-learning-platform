@@ -159,6 +159,7 @@ export default function Dashboard() {
     { id: 'history', label: 'Assessment History', icon: '🕒' },
     { id: 'profile', label: 'My Profile', icon: '👤', path: '/module1/profile' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
+    { id: 'teacher', label: "Teacher's Portal", icon: '🎓', path: '/module3', dividerBefore: true },
   ];
 
   return (
@@ -213,15 +214,19 @@ export default function Dashboard() {
               const isActive = activeTab === item.id;
               if (item.path) {
                 return (
-                  <Link
-                    key={item.id}
-                    to={item.path}
-                    className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl font-medium text-xs text-slate-300 hover:bg-slate-800/80 hover:text-white transition-all group"
-                    title={sidebarCollapsed ? item.label : undefined}
-                  >
-                    <span className="text-base group-hover:scale-110 transition-transform">{item.icon}</span>
-                    {!sidebarCollapsed && <span>{item.label}</span>}
-                  </Link>
+                  <div key={item.id}>
+                    {item.dividerBefore && !sidebarCollapsed && (
+                      <div className="my-2 border-t border-slate-700/60" />
+                    )}
+                    <Link
+                      to={item.path}
+                      className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl font-medium text-xs text-slate-300 hover:bg-slate-800/80 hover:text-white transition-all group"
+                      title={sidebarCollapsed ? item.label : undefined}
+                    >
+                      <span className="text-base group-hover:scale-110 transition-transform">{item.icon}</span>
+                      {!sidebarCollapsed && <span>{item.label}</span>}
+                    </Link>
+                  </div>
                 );
               }
 
@@ -784,12 +789,15 @@ export default function Dashboard() {
               </div>
 
               {/* ────────────────────────────────────────────── */}
-              {/* 6 & 7. ASSESSMENT CARD & RECENT ACTIVITY */}
+              {/* 6 & 7. ASSESSMENT CARDS & RECENT ACTIVITY */}
               {/* ────────────────────────────────────────────── */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* 6. Assessment Card */}
-                <div className="lg:col-span-2 bg-gradient-to-br from-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-7 text-white shadow-md flex flex-col justify-between gap-6">
+                {/* Left col: Diagnostic + Adaptive stacked */}
+                <div className="lg:col-span-2 flex flex-col gap-4">
+
+                {/* 6a. Diagnostic Pre-Assessment Card */}
+                <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-7 text-white shadow-md flex flex-col justify-between gap-6">
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 uppercase tracking-wider">
@@ -840,9 +848,61 @@ export default function Dashboard() {
                       )}
                     </div>
                   </div>
-                </div>
+                </div>{/* end diagnostic card */}
 
-                {/* 7. Recent Activity Card */}
+                  {/* 6b. Adaptive Assessment Card */}
+                  <div className="bg-gradient-to-br from-violet-900 to-indigo-900 rounded-3xl p-6 sm:p-7 text-white shadow-md flex flex-col justify-between gap-6">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/30 text-violet-200 border border-violet-400/30 uppercase tracking-wider">
+                          Module 2 — Adaptive Engine
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          assessmentStatus === 'Completed'
+                            ? 'bg-emerald-500/20 text-emerald-300'
+                            : 'bg-slate-500/30 text-slate-300'
+                        }`}>
+                          {assessmentStatus === 'Completed' ? 'Ready to Launch' : 'Complete Diagnostic First'}
+                        </span>
+                      </div>
+
+                      <h3 className="text-xl sm:text-2xl font-black text-white">
+                        Computer Adaptive Test (CAT)
+                      </h3>
+
+                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
+                        {assessmentStatus === 'Completed'
+                          ? 'Your baseline is set. The AI engine will select questions that dynamically adjust in difficulty based on each of your responses in real time.'
+                          : 'Complete the diagnostic pre-assessment first to calibrate your starting level. The adaptive engine needs your baseline to personalise question difficulty.'}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-white/10">
+                      <div className="flex items-center gap-3 text-xs text-slate-300">
+                        <span>🧠 <strong>AI-Adaptive</strong> Difficulty</span>
+                        <span>•</span>
+                        <span><strong>10–20</strong> Questions</span>
+                        <span>•</span>
+                        <span>⏱️ <strong>90s</strong> per Question</span>
+                      </div>
+                      <div className="ml-auto">
+                        {assessmentStatus === 'Completed' ? (
+                          <Link
+                            to="/assessment"
+                            className="px-5 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-400 text-white font-bold text-xs shadow-md transition-all"
+                          >
+                            Start Adaptive Test →
+                          </Link>
+                        ) : (
+                          <span className="px-5 py-2.5 rounded-xl bg-white/10 text-white/50 font-bold text-xs border border-white/20 cursor-not-allowed">
+                            🔒 Locked — Take Diagnostic First
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>{/* end left column */}
                 <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between space-y-4">
                   <div className="space-y-2">
                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
