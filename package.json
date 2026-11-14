@@ -15,8 +15,10 @@
     "start": "npm --prefix server start",
     "test": "npm --prefix server test",
     "build": "npm --prefix client run build",
-    "prisma:generate": "npx prisma generate",
-    "prisma:migrate": "npx prisma migrate dev",
+    "build:server": "npx prisma generate --schema prisma/schema.prisma",
+    "prisma:generate": "npx prisma generate --schema prisma/schema.prisma",
+    "prisma:migrate": "npx prisma migrate dev --schema prisma/schema.prisma",
+    "prisma:deploy": "npx prisma migrate deploy --schema prisma/schema.prisma",
     "prisma:seed": "node prisma/seed.js",
     "prisma:studio": "npx prisma studio"
   },

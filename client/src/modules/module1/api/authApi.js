@@ -2,8 +2,9 @@
 // Client API service for student authentication.
 
 import axios from 'axios';
+import { getApiBaseUrl } from '../../../config/api';
 
-const API_BASE = '/api/auth';
+const API_BASE = `${getApiBaseUrl()}/auth`;
 
 export async function registerStudent(data) {
   const response = await axios.post(`${API_BASE}/register`, data);

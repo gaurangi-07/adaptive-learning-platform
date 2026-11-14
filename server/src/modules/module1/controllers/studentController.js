@@ -10,9 +10,10 @@ const { inMemoryBaselines, inMemoryAttempts, inMemoryResponses } = require('./pr
 let prisma;
 try {
   const { getPrismaClient } = require('../../../prismaClient');
-  prisma = getPrismaClient() || new PrismaClient();
+  const client = getPrismaClient();
+  prisma = process.env.NODE_ENV === 'test' ? null : (client || new PrismaClient());
 } catch {
-  prisma = new PrismaClient();
+  prisma = process.env.NODE_ENV === 'test' ? null : new PrismaClient();
 }
 
 const ASSESSMENT_DURATION_MS = 15 * 60 * 1000;

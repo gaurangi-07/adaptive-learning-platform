@@ -3,6 +3,9 @@
 // active session resumption, and baseline calculation.
 
 import axios from 'axios';
+import { getApiBaseUrl } from '../../../config/api';
+
+const API_BASE = `${getApiBaseUrl()}/assessment`;
 
 function authHeader() {
   const token = localStorage.getItem('authToken');
@@ -14,7 +17,7 @@ function authHeader() {
  */
 export async function startPreAssessment(questionCount = 10) {
   const response = await axios.post(
-    '/api/assessment/pre',
+    `${API_BASE}/pre`,
     { questionCount },
     { headers: authHeader() }
   );
@@ -26,7 +29,7 @@ export async function startPreAssessment(questionCount = 10) {
  */
 export async function getPreAssessmentAttempt(attemptId) {
   const response = await axios.get(
-    `/api/assessment/pre/${attemptId}`,
+    `${API_BASE}/pre/${attemptId}`,
     { headers: authHeader() }
   );
   return response.data;
@@ -38,7 +41,7 @@ export async function getPreAssessmentAttempt(attemptId) {
  */
 export async function fetchActiveAssessment() {
   const response = await axios.get(
-    '/api/assessment/active',
+    `${API_BASE}/active`,
     { headers: authHeader() }
   );
   return response.data;
@@ -50,7 +53,7 @@ export async function fetchActiveAssessment() {
  */
 export async function fetchAssessmentHistory() {
   const response = await axios.get(
-    '/api/assessment/history',
+    `${API_BASE}/history`,
     { headers: authHeader() }
   );
   return response.data;
@@ -69,7 +72,7 @@ export async function recordAssessmentAnswer({
   isMarkedForReview,
 }) {
   const response = await axios.post(
-    '/api/assessment/answer',
+    `${API_BASE}/answer`,
     { assessmentId, questionId, selectedOption, responseTimeSec, isMarkedForReview },
     { headers: authHeader() }
   );
@@ -82,7 +85,7 @@ export async function recordAssessmentAnswer({
  */
 export async function getAssessmentResponses(assessmentId) {
   const response = await axios.get(
-    `/api/assessment/${assessmentId}/responses`,
+    `${API_BASE}/${assessmentId}/responses`,
     { headers: authHeader() }
   );
   return response.data;
@@ -112,7 +115,7 @@ export async function savePreAssessmentResponse(attemptId, {
  */
 export async function finishPreAssessment(attemptId, responses = []) {
   const response = await axios.post(
-    '/api/assessment/finish',
+    `${API_BASE}/finish`,
     { attemptId, assessmentId: attemptId, responses },
     { headers: authHeader() }
   );
@@ -125,7 +128,7 @@ export async function finishPreAssessment(attemptId, responses = []) {
  */
 export async function fetchPreResult() {
   const response = await axios.get(
-    '/api/assessment/pre/result',
+    `${API_BASE}/pre/result`,
     { headers: authHeader() }
   );
   return response.data;

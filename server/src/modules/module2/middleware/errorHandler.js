@@ -17,12 +17,18 @@ function errorHandler(err, req, res, _next) {
   const statusCode = err.statusCode || 500;
   const isProduction = process.env.NODE_ENV === 'production';
 
+  // In production, do not leak internal database / unexpected runtime error details
+  const errorMessage =
+    statusCode === 500 && isProduction && !err.isOperational
+      ? 'Internal Server Error'
+      : (err.message || 'Internal Server Error');
+
   const response = {
     success: false,
-    error: err.message || 'Internal Server Error'
+    error: errorMessage
   };
 
-  if (err.details) {
+  if (err.details && (!isProduction || err.isOperational)) {
     response.details = err.details;
   }
 

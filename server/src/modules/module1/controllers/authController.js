@@ -11,9 +11,10 @@ const { PrismaClient } = require('@prisma/client');
 let prisma;
 try {
   const { getPrismaClient } = require('../../../prismaClient');
-  prisma = getPrismaClient() || new PrismaClient();
+  const client = getPrismaClient();
+  prisma = process.env.NODE_ENV === 'test' ? null : (client || new PrismaClient());
 } catch {
-  prisma = new PrismaClient();
+  prisma = process.env.NODE_ENV === 'test' ? null : new PrismaClient();
 }
 
 // In-memory student cache for local testing / development when PostgreSQL is offline

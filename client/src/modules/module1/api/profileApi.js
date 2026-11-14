@@ -2,6 +2,9 @@
 // Simple wrappers for profile and dashboard endpoints.
 
 import axios from 'axios';
+import { getApiBaseUrl } from '../../../config/api';
+
+const API_BASE = getApiBaseUrl();
 
 function authHeader() {
   const token = localStorage.getItem('authToken');
@@ -9,16 +12,16 @@ function authHeader() {
 }
 
 export async function fetchProfile() {
-  const response = await axios.get('/api/student/profile', { headers: authHeader() });
+  const response = await axios.get(`${API_BASE}/student/profile`, { headers: authHeader() });
   return response.data;
 }
 
 export async function updateProfile(data) {
-  const response = await axios.put('/api/student/profile', data, { headers: authHeader() });
+  const response = await axios.put(`${API_BASE}/student/profile`, data, { headers: authHeader() });
   return response.data;
 }
 
 export async function fetchDashboard() {
-  const response = await axios.get('/api/student/dashboard', { headers: authHeader() });
+  const response = await axios.get(`${API_BASE}/student/dashboard`, { headers: authHeader() });
   return response.data;
 }

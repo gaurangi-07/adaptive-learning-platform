@@ -8,6 +8,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getApiBaseUrl } from '../config/api';
+
+const API_BASE = getApiBaseUrl();
 
 function getAuthHeaders() {
   const token = localStorage.getItem('authToken');
@@ -40,8 +43,8 @@ export default function UnifiedReportPage() {
       try {
         const headers = getAuthHeaders();
         const [adaptiveRes, dashRes] = await Promise.allSettled([
-          axios.get(`/api/adaptive/${adaptiveAttemptId}/summary`, { headers }),
-          axios.get('/api/student/dashboard', { headers })
+          axios.get(`${API_BASE}/adaptive/${adaptiveAttemptId}/summary`, { headers }),
+          axios.get(`${API_BASE}/student/dashboard`, { headers })
         ]);
 
         if (adaptiveRes.status === 'fulfilled') {

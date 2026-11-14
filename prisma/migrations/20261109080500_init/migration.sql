@@ -5,7 +5,36 @@ CREATE TYPE "QuestionStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'ARCHIV
 CREATE TYPE "AssessmentStatus" AS ENUM ('IN_PROGRESS', 'COMPLETED', 'ABANDONED', 'TIMED_OUT');
 
 -- CreateTable
-CREATE TABLE "adaptive_assessments" (
+CREATE TABLE "Student" (
+    "id" SERIAL NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "hashedPassword" TEXT NOT NULL,
+    "college" TEXT,
+    "branch" TEXT,
+    "yearOfStudy" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "BaselineResult" (
+    "id" SERIAL NOT NULL,
+    "studentId" INTEGER NOT NULL,
+    "overallAccuracy" DOUBLE PRECISION NOT NULL,
+    "totalQuestions" INTEGER NOT NULL,
+    "correctAnswers" INTEGER NOT NULL,
+    "topicProficiency" JSONB NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "BaselineResult_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AdaptiveAssessment" (
     "id" TEXT NOT NULL,
     "studentId" INTEGER NOT NULL,
     "subject" TEXT NOT NULL DEFAULT 'Mathematics',
@@ -20,11 +49,11 @@ CREATE TABLE "adaptive_assessments" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "adaptive_assessments_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "AdaptiveAssessment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "assessment_questions" (
+CREATE TABLE "AssessmentQuestion" (
     "id" TEXT NOT NULL,
     "assessmentId" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
@@ -39,11 +68,11 @@ CREATE TABLE "assessment_questions" (
     "allocatedSeconds" INTEGER NOT NULL DEFAULT 90,
     "presentedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "assessment_questions_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "AssessmentQuestion_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "student_responses" (
+CREATE TABLE "StudentResponse" (
     "id" TEXT NOT NULL,
     "assessmentId" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
@@ -59,11 +88,11 @@ CREATE TABLE "student_responses" (
     "topic" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "student_responses_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "StudentResponse_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "topic_proficiencies" (
+CREATE TABLE "TopicProficiency" (
     "id" TEXT NOT NULL,
     "assessmentId" TEXT NOT NULL,
     "studentId" INTEGER NOT NULL,
@@ -77,11 +106,11 @@ CREATE TABLE "topic_proficiencies" (
     "recentOutcomes" TEXT NOT NULL DEFAULT '[]',
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "topic_proficiencies_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "TopicProficiency_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "difficulty_history" (
+CREATE TABLE "DifficultyHistory" (
     "id" TEXT NOT NULL,
     "assessmentId" TEXT NOT NULL,
     "topic" TEXT NOT NULL,
@@ -92,7 +121,36 @@ CREATE TABLE "difficulty_history" (
     "details" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "difficulty_history_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "DifficultyHistory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PreAssessmentAttempt" (
+    "id" TEXT NOT NULL,
+    "studentId" INTEGER NOT NULL,
+    "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "completedAt" TIMESTAMP(3),
+    "status" "AssessmentStatus" NOT NULL DEFAULT 'IN_PROGRESS',
+    "totalQuestions" INTEGER NOT NULL,
+    "correctAnswers" INTEGER NOT NULL DEFAULT 0,
+    "topicProficiency" JSONB,
+    "questionIds" JSONB NOT NULL,
+
+    CONSTRAINT "PreAssessmentAttempt_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PreAssessmentResponse" (
+    "id" TEXT NOT NULL,
+    "attemptId" TEXT NOT NULL,
+    "studentId" INTEGER,
+    "questionId" TEXT NOT NULL,
+    "selectedOption" TEXT,
+    "responseTimeSec" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    "isMarkedForReview" BOOLEAN NOT NULL DEFAULT false,
+    "answeredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PreAssessmentResponse_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -111,7 +169,6 @@ CREATE TABLE "questions" (
     "reviewedAt" TIMESTAMP(3),
     "rejectionReason" TEXT,
     "source" TEXT NOT NULL DEFAULT 'MANUAL',
-    "aiGenerationId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -130,76 +187,56 @@ CREATE TABLE "question_options" (
 );
 
 -- CreateTable
-CREATE TABLE "ai_generation_logs" (
-    "id" TEXT NOT NULL,
-    "provider" TEXT NOT NULL,
-    "subject" TEXT NOT NULL,
-    "topic" TEXT NOT NULL,
-    "difficulty" INTEGER NOT NULL,
-    "requestedCount" INTEGER NOT NULL,
-    "generatedCount" INTEGER NOT NULL DEFAULT 0,
-    "validCount" INTEGER NOT NULL DEFAULT 0,
-    "status" TEXT NOT NULL DEFAULT 'PENDING',
-    "errorMessage" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "ai_generation_logs_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "question_review_history" (
+CREATE TABLE "QuestionReviewHistory" (
     "id" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
     "reviewerId" TEXT,
-    "previousStatus" "QuestionStatus" NOT NULL,
+    "previousStatus" "QuestionStatus",
     "newStatus" "QuestionStatus" NOT NULL,
-    "rejectionReason" TEXT,
-    "reviewedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "comment" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "question_review_history_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "QuestionReviewHistory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE INDEX "adaptive_assessments_studentId_idx" ON "adaptive_assessments"("studentId");
+CREATE UNIQUE INDEX "Student_email_key" ON "Student"("email");
 
 -- CreateIndex
-CREATE INDEX "adaptive_assessments_status_idx" ON "adaptive_assessments"("status");
+CREATE UNIQUE INDEX "BaselineResult_studentId_key" ON "BaselineResult"("studentId");
 
 -- CreateIndex
-CREATE INDEX "adaptive_assessments_createdAt_idx" ON "adaptive_assessments"("createdAt");
+CREATE UNIQUE INDEX "StudentResponse_assessmentQuestionId_key" ON "StudentResponse"("assessmentQuestionId");
 
 -- CreateIndex
-CREATE INDEX "assessment_questions_assessmentId_idx" ON "assessment_questions"("assessmentId");
+CREATE INDEX "StudentResponse_assessmentId_idx" ON "StudentResponse"("assessmentId");
 
 -- CreateIndex
-CREATE INDEX "assessment_questions_questionId_idx" ON "assessment_questions"("questionId");
+CREATE INDEX "StudentResponse_assessmentId_topic_idx" ON "StudentResponse"("assessmentId", "topic");
 
 -- CreateIndex
-CREATE INDEX "assessment_questions_topic_difficulty_idx" ON "assessment_questions"("topic", "difficulty");
+CREATE INDEX "StudentResponse_questionId_idx" ON "StudentResponse"("questionId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "student_responses_assessmentQuestionId_key" ON "student_responses"("assessmentQuestionId");
+CREATE INDEX "TopicProficiency_studentId_topic_idx" ON "TopicProficiency"("studentId", "topic");
 
 -- CreateIndex
-CREATE INDEX "student_responses_assessmentId_idx" ON "student_responses"("assessmentId");
+CREATE UNIQUE INDEX "TopicProficiency_assessmentId_topic_key" ON "TopicProficiency"("assessmentId", "topic");
 
 -- CreateIndex
-CREATE INDEX "student_responses_assessmentId_topic_idx" ON "student_responses"("assessmentId", "topic");
+CREATE INDEX "DifficultyHistory_assessmentId_idx" ON "DifficultyHistory"("assessmentId");
 
 -- CreateIndex
-CREATE INDEX "student_responses_questionId_idx" ON "student_responses"("questionId");
+CREATE INDEX "DifficultyHistory_assessmentId_topic_idx" ON "DifficultyHistory"("assessmentId", "topic");
 
 -- CreateIndex
-CREATE INDEX "topic_proficiencies_studentId_topic_idx" ON "topic_proficiencies"("studentId", "topic");
+CREATE INDEX "PreAssessmentResponse_attemptId_idx" ON "PreAssessmentResponse"("attemptId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "topic_proficiencies_assessmentId_topic_key" ON "topic_proficiencies"("assessmentId", "topic");
+CREATE INDEX "PreAssessmentResponse_studentId_idx" ON "PreAssessmentResponse"("studentId");
 
 -- CreateIndex
-CREATE INDEX "difficulty_history_assessmentId_idx" ON "difficulty_history"("assessmentId");
-
--- CreateIndex
-CREATE INDEX "difficulty_history_assessmentId_topic_idx" ON "difficulty_history"("assessmentId", "topic");
+CREATE UNIQUE INDEX "PreAssessmentResponse_attemptId_questionId_key" ON "PreAssessmentResponse"("attemptId", "questionId");
 
 -- CreateIndex
 CREATE INDEX "questions_subject_topic_difficulty_idx" ON "questions"("subject", "topic", "difficulty");
@@ -214,31 +251,44 @@ CREATE INDEX "questions_createdAt_idx" ON "questions"("createdAt");
 CREATE INDEX "question_options_questionId_idx" ON "question_options"("questionId");
 
 -- CreateIndex
-CREATE INDEX "ai_generation_logs_createdAt_idx" ON "ai_generation_logs"("createdAt");
+CREATE INDEX "QuestionReviewHistory_questionId_idx" ON "QuestionReviewHistory"("questionId");
 
 -- CreateIndex
-CREATE INDEX "question_review_history_questionId_idx" ON "question_review_history"("questionId");
+CREATE INDEX "QuestionReviewHistory_reviewerId_idx" ON "QuestionReviewHistory"("reviewerId");
 
 -- AddForeignKey
-ALTER TABLE "assessment_questions" ADD CONSTRAINT "assessment_questions_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "adaptive_assessments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "BaselineResult" ADD CONSTRAINT "BaselineResult_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "student_responses" ADD CONSTRAINT "student_responses_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "adaptive_assessments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AdaptiveAssessment" ADD CONSTRAINT "AdaptiveAssessment_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "student_responses" ADD CONSTRAINT "student_responses_assessmentQuestionId_fkey" FOREIGN KEY ("assessmentQuestionId") REFERENCES "assessment_questions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AssessmentQuestion" ADD CONSTRAINT "AssessmentQuestion_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "AdaptiveAssessment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "topic_proficiencies" ADD CONSTRAINT "topic_proficiencies_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "adaptive_assessments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "StudentResponse" ADD CONSTRAINT "StudentResponse_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "AdaptiveAssessment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "difficulty_history" ADD CONSTRAINT "difficulty_history_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "adaptive_assessments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "StudentResponse" ADD CONSTRAINT "StudentResponse_assessmentQuestionId_fkey" FOREIGN KEY ("assessmentQuestionId") REFERENCES "AssessmentQuestion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "questions" ADD CONSTRAINT "questions_aiGenerationId_fkey" FOREIGN KEY ("aiGenerationId") REFERENCES "ai_generation_logs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "TopicProficiency" ADD CONSTRAINT "TopicProficiency_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "AdaptiveAssessment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DifficultyHistory" ADD CONSTRAINT "DifficultyHistory_assessmentId_fkey" FOREIGN KEY ("assessmentId") REFERENCES "AdaptiveAssessment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PreAssessmentAttempt" ADD CONSTRAINT "PreAssessmentAttempt_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PreAssessmentResponse" ADD CONSTRAINT "PreAssessmentResponse_attemptId_fkey" FOREIGN KEY ("attemptId") REFERENCES "PreAssessmentAttempt"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PreAssessmentResponse" ADD CONSTRAINT "PreAssessmentResponse_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "question_options" ADD CONSTRAINT "question_options_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "questions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "question_review_history" ADD CONSTRAINT "question_review_history_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "questions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "QuestionReviewHistory" ADD CONSTRAINT "QuestionReviewHistory_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "questions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
