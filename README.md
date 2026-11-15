@@ -10,6 +10,19 @@
 - Tracks per-topic proficiency and response analytics
 - Delivers structured assessment summaries to Module 3
 
+
+## How It Works
+
+The platform connects assessment delivery, question quality, and learning insights in one workflow:
+
+1. **Start with a baseline**: a student's initial ability estimate is supplied by Module 1, or by the development mock adapter when running locally.
+2. **Adapt after every response**: Module 2 selects the next question using the student's current proficiency, topic history, and unanswered question pool. Questions become more or less challenging as evidence accumulates.
+3. **Protect the assessment**: answer keys and explanations stay on the server until a response is submitted. The server also enforces the question timer and prevents duplicate submissions.
+4. **Review before publishing**: Module 3 validates generated questions, checks for duplicates, and sends them through the teacher review queue before they can enter an assessment.
+5. **Turn results into action**: completed assessments produce topic-level and difficulty-level performance data, printable reports, and recommended learning pathways.
+
+This design keeps the learner experience focused while giving teachers a clear trail from question creation to measurable student progress.
+
 ---
 
 ## Repository Structure
